@@ -1,0 +1,209 @@
+%!PS-Adobe-2.0 EPSF-2.0
+%%Creator: G. Rossmanith
+%%Title: Logo Uni Ulm Version 1.0
+%%CreationDate: 28.02.1993
+%%Pages: 0
+%%DocumentFonts: Times-Roman
+%%BoundingBox: 130 130 440 440
+%%EndComments
+
+%%BeginProlog
+
+%begin(plot)
+
+/LogoDict 100 dict def
+LogoDict begin
+%---------------------------------------+
+/Size 200  def    % Size of logo in mm   |
+%---------------------------------------+
+/Times-Roman findfont 27 scalefont setfont
+/Pi 3.1415923 def
+
+/DrawEllipse { /dr exch def
+               /savematrix matrix currentmatrix def
+               angle rotate
+               scale 0 0 1 
+               dr 0 gt { sa ea arc }{ ea sa arcn }ifelse
+               savematrix setmatrix
+             } def
+
+/DrawPath { /lw currentlinewidth def 2 setlinewidth 
+            /angle exch def /xr exch def
+            /ea exch def /sa exch def
+            /yr xr 0.422 mul def 
+            xr 0.035 mul dup
+            /xro exch xr exch sub def
+            /yro exch yr exch sub def
+            newpath
+        
+            xr  yr   1 DrawEllipse
+            stroke
+            xro yro  1 DrawEllipse
+            stroke
+            1 setgray
+            xr  yr   1 DrawEllipse
+            xro yro -1 DrawEllipse
+            fill
+            0 setgray
+
+            lw setlinewidth
+          } def
+
+/ClearPath { /angle exch def /xr exch def
+             /ea exch def /sa exch def
+             /yr xr 0.422 mul def 
+             xr 0.035 mul dup
+             /xro exch xr exch sub def
+             /yro exch yr exch sub def
+
+             xr  yr   1 DrawEllipse
+             xro yro -1 DrawEllipse
+             1 setgray fill
+             0 setgray               
+           } def
+
+/circle { gsave 13 add rotate 
+          110 0 5.5 0 360 arc gsave 
+          1 setgray fill grestore stroke
+          grestore
+        } def
+
+/outsidecircletext { /radius exch def
+                     /startangle exch def
+                     /ptsize exch def
+                     /str exch def
+                     /angleoffset 0 def
+                     /anglesum 0 def
+                     gsave
+                     startangle rotate
+                     compute_offset
+                     str { /charcode exch def
+                           ( ) dup 0 charcode put outsideplacechar
+                         } forall
+                     uangle umlaut
+                     grestore
+                   } def
+     
+/findhalfangle { stringwidth pop 2 div
+                 2 radius mul Pi mul div 360 mul angleoffset add
+               } def
+
+/compute_offset { /angleoffset 180 str findhalfangle sub
+                  str length div def
+                } def
+  
+/outsideplacechar { /char exch def
+                    /halfangle char findhalfangle def
+                    gsave
+                    halfangle neg rotate
+                    radius 0 translate
+                    -90 rotate
+                    char 0 get (X) 0 get eq {0 7 1.2 0 360 arc fill}
+                    { char stringwidth pop 2 div neg 0 moveto
+                      char show } ifelse
+                    char 0 get 65 eq { /uangle anglesum 
+                                       halfangle neg add def } if
+                    grestore
+                    /anglesum anglesum
+                    halfangle 2 mul neg dup rotate
+                    add def
+                  } def
+  
+/letter { 27 51 145 outsidecircletext } def
+
+/umlaut { gsave 1.4 add rotate 
+          165 0 1.2 0 360 arc fill 
+          2.8 neg rotate 
+          165 0 1.2 0 360 arc fill 
+          grestore
+        } def
+
+/rod { /lw currentlinewidth def 0.5 setlinewidth 
+       newpath
+       -2.5  55 moveto
+       -1.5 -55 lineto
+        0.0 -55 1.5 -180 0 arc
+        2.5  55 lineto
+        0.0  55 2.5 0 180 arc closepath 
+       gsave 1 setgray fill grestore stroke
+       lw setlinewidth
+     } def
+
+/halfsnake { /di exch def
+             newpath      
+              -2   6 di mul  moveto
+              -5  32 di mul -20  32 di mul -25  0 curveto
+             -29 -22 di mul -40 -22 di mul -44  0 curveto
+             -49  27 di mul -64  27 di mul -69  0 curveto
+             -72 -16 di mul -80 -16 di mul -83 -6 di mul curveto
+             -83  -3 di mul -85  -3 di mul -85 -6 di mul curveto
+             -81 -22 di mul -70 -22 di mul -66  0 curveto
+             -62  19 di mul -51  19 di mul -47  0 curveto
+             -42 -30 di mul -27 -30 di mul -22  0 curveto
+             -18  25 di mul  -8  25 di mul  -4  6 di mul curveto
+              -4   3 di mul  -2   3 di mul  -2  6 di mul curveto
+             gsave
+             1 setgray fill
+             grestore
+             stroke
+           } def
+
+/snake { gsave 90 rotate 0.5 setlinewidth
+         44 0 translate
+
+%          0 -100 moveto    0 100 lineto stroke
+%        -87 -100 moveto  -87 100 lineto stroke
+%        100  -37 moveto -200  -4 lineto stroke
+%        100   37 moveto -200   4 lineto stroke
+
+          1 halfsnake
+         -1 halfsnake
+
+         gsave
+         -35   0 moveto
+           0 -30 rlineto -20 0 rlineto 0 60 rlineto
+          20   0 rlineto closepath clip newpath
+         1 halfsnake
+         grestore
+
+         grestore
+       } def
+
+
+/logo { dup 25.4 div 72 mul 2 div dup translate
+        220 div dup scale
+          0 360 125   0 DrawPath
+          0 360 125  90 DrawPath
+          0 360 125  45 DrawPath
+          0 360 125 -45 DrawPath
+          0 180 125   0 ClearPath
+          0 180 125  45 ClearPath
+        180 360 125  90 ClearPath
+          0 180 125 -45 ClearPath
+        105 180 125   0 DrawPath
+         90 180 125  90 ClearPath
+        240 290 125   0 ClearPath
+        240 260 125  45 ClearPath
+        180 270 125  90 DrawPath
+          0  60 125   0 DrawPath
+         90 160 125  45 DrawPath
+
+        0 45 315 { circle } for
+
+        (ULMXSCIENDOXDOCENDOXCURANDOXUNIVERSITAT ) letter
+        
+        rod
+        
+        snake
+
+      } def
+
+%%EndProlog
+
+Size logo
+end
+
+%end(plot)
+
+%%EOF
+%%EndDocument

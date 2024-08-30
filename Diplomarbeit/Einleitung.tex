@@ -1,0 +1,159 @@
+\chapter{Einleitung und Motivation}
+\section{Dokumentanalyse}
+\label{DokAna}
+
+Das Papier als Informationstr"ager ist in unserer heutigen Zeit nicht
+mehr wegzudenken. Die meisten B"ucher, Zeitschriften und Artikel, vor
+allem "alteren Jahrgangs, sind nur in ihrer gedruckten Form
+erh"altlich. Dennoch m"ochte man die Papierberge, die sich auf
+Schreibtischen und in Aktenschr"anken t"urmen, mit dem
+B"urocomputer elektronisch verarbeiten. 
+Schon vor Jahren wurde von den Propheten der Computergesellschaft das
+Zeitalter der {\em papierlosen B"uros\/} angek"undigt. 
+Der Wunsch ganz auf das Papier
+zu verzichten liegt deshalb nahe, er wird sich jedoch auf lange Zeit nicht verwirklichen lassen.
+Um diesem Ziel n"aher zu kommen, mu"s die
+auf das Papier gebrachte Information zun"achst in eine dem Computer
+verst"andliche Form konvertiert und interpretiert werden. Anschlie"send m"ussen
+entsprechende Handlungen ausgel"ost werden. Dies sind Aufgaben der
+{\em Dokumentanalyse\/} (s.\ \BildRef{Dokumentanalyse} und
+\cite{PixelToContents}):
+
+\Bild{Dokumentanalyse}{15}{Ablauf der Dokumentanalyse}
+
+\begin{enumerate}
+
+\item {\em Digitalisierung:}\\
+Das grundlegende Funktionsprinzip eines Scanners besteht in dem zeilenweisen 
+Abtasten (engl.\ {\em to scan\/}) der
+Vorlagen durch eine Leiste lichtempfindlicher Sensoren. 
+Beim Digitalisieren wird die Vorlage mit Hilfe einer starken
+Lichtquelle angestrahlt, wodurch das Bild auf eine Reihe von CCD--Elementen
+({\sl C\/}harge {\sl C\/}oupled {\sl D\/}evices) geworfen wird. Diese
+Sensoren nehmen das unterschiedlich reflektierte Licht auf und wandeln
+die Helligkeitsinformation in digitale Werte. F"ur die Texterkennung
+gen"ugen i.d.R.\ Ein--Bit--Scanner, so da"s nach der Digitalisierung ein
+Bin"arbild  zur Verf"ugung steht, d.h.~jeder Bildpunkt wird mit einem Bit kodiert.
+
+Zu dem wichtigsten Qualit"atsmerkmal eines Scanners geh"ort die Aufl"osungsf"ahigkeit. 
+Es hat sich 300dpi ({\em d\/}ots {\em p\/}er {\em i\/}nch) 
+in der Texterkennung als Standard etabliert. 
+Jeweils 300 CCD--Elemente liegen pro Inch nebeneinander.
+Die CCD--Zeile bewegt sich au"serdem mit 300 Schritten pro Inch unter der Vorlage hinweg. Jedes
+Element beliefert bei jedem Schritt einen Lichtwert als Pixel an den Scanner. Bei einer Aufl"osung
+von 300x300dpi in einem Feld von 1x1 Inch werden 90.000 Punkte erzeugt. Da die Anzahl
+der Punkte in der horizontalen und vertikalen Achse identisch sind, spricht man abk"urzend
+nur jeweils von der Anzahl der Punkte in einer Ebene. Bei 300dpi handelt es sich um eine
+Aufl"osung, die normalerweise f"ur Texte im Zeitungs-- und Zeitschriftenbereich ausreichend ist.
+Sind allerdings sehr kleine Schriften zu erkennen, mu"s die Aufl"osung erh"oht werden, um ein gutes
+Ergebnis zu erzielen.
+
+\item {\em Bildaufbereitung:}\\
+Bedingt durch die Vorlagenqualit"at sowie anderer Beeintr"achtigungen,
+wie z.B.\ Papierfehler, Knicke oder Staub auf der Glasfl"ache des Scanners,
+kann die Erkennung nachhaltig gest"ort werden. Zur Beseitigung dieser
+St"orungen ist die Anwendung verschiedenartiger Filter\-ungs\-methoden zu empfehlen. Verfahren
+zur Beseitigung von {\em Salt and Pepper Noise\/} (wei"se Einschl"usse in schwarzen Gebieten
+und schwarze St"orungen auf wei"sem Hintergrund) sind z.B\ in \cite{Bartneck90} beschrieben.
+Zus"atzlich kann durch unsachgem"a"ses Einlegen oder falsch justierte 
+automatische Papiereinz"uge die Vorlage schr"ag erfa"st werden. 
+Ist dies der Fall, mu"s das schr"ag vorliegende Dokumentbild horizontal ausgerichtet (rotiert) werden.
+
+\item {\em Segmentierung:}\\
+Das Dokument wird in seine geometrische Struktur zerlegt, d.h.\
+in Spalten bzw.\ Bl"ocke, Textzeilen, W"orter und letztendlich in
+Schriftzeichen \cite{Bohnacker93}. Zuvor m"ussen grafische Bestandteile von
+den Textbereichen getrennt werden. Die Segmentierung in Spalten
+bzw.\ Bl"ocke ist Bestandteil dieser Arbeit.
+
+\item {\em Zeichenbedeutung:}\\
+Die bei der Segmentierung gefundenen geometrischen Objekte werden zu
+einer oder mehreren Bedeutungshypothesen zugeordnet \cite{Schuermann77}, d.h.\ es wird jedes
+einzelne Schriftzeichen erkannt (Klassifikation).
+
+\item {\em Kontextverfahren:}\\
+Konkurrierende Zeichenbedeutungen werden durch Betrachtung der Nachbarzeichen bewertet (Kontext).
+%geometrischer Kontext, linguistischer Kontext, etc.
+
+\item {\em Interpretation:}\\
+Im letzten Schritt wird versucht das Dokument in verschiedene
+Textkategorien einzuteilen (Rechnung, Bestellung, Gesch"aftsbrief
+etc.). Zus"atzlich werden strukturierte und unstrukturierte
+Informationen extrahiert, und ggf.\ ein Antwortschreiben automatisch
+generiert.
+\end{enumerate}
+
+\section{Das Projekt InfoPort}
+\label{InfoPort}
+
+Die Arbeiten der Abteilung {\sl Textverstehende Systeme\/} des
+Daimler--Benz Forschungszentrums in Ulm befassen sich im wesentlichen mit 
+der Erkennung von Schriftzeichen --- maschinengeschriebenen, handblockschriftlichen, kursiven oder 
+Kanji\footnote{Japanische Schriftzeichen} ---  und
+der Interpretation von Texten. Diese Texte k"onnen als bildhafte Daten
+(Papierdokument) oder als elektronischer Text repr"asentiert
+sein. Ziel des Projektes {\sl InfoPort\/} \cite{InfoPortLab} ist es,
+die Information aus diesen Texten im Kontext einer speziellen Anwendung
+zu extrahieren, um die Weiterverarbeitung dieser Information zu unterst"utzen,
+insbesondere, wenn es sich um Routinearbeit handelt. 
+Zu diesen Hilfen z"ahlen unter anderem die automatische
+Indexierung und Speicherung in Datenbanken, die automatische
+Informationsweiterleitung an die zust"andige Person und die
+Unterst"utzung bei der Bearbeitung der Dokumente.
+
+Als beispielhafte Anwendung wurde der Text der Dokumentklasse
+Gesch"aftsbriefe in einem speziellen Anwendungskontext (Anfragen
+nach Zusendung eines Daimler--Benz Ge\-sch"afts\-berichts) gew"ahlt. Das
+Ergebnis dieser Anwendung ist ein automatisch generiertes
+Antwortschreiben mit passender Adressierung an den Absender.
+
+Die Analyse erfolgt in vier Arbeitsschritten:
+\begin{itemize}
+  
+  \item {\sl Dokumentbildanalyse:}\\
+    Transformation des Bildes in elektronischen Text --
+    optische Zeichenerkennung.\footnote{{\em O\/}ptical {\em C\/}haracter {\em R\/}ecognition (OCR)}
+
+  \item {\sl Textkategorisierung:}\\
+    Bestimmung des Textthemas.
+  
+  \item {\sl Informationsextraktion aus strukturierten Texten:}\\
+    Interpretation der strukturierten Textteile (Absender, Empf"anger,
+    etc.).
+
+  \item {\sl Informationsextraktion aus unstrukturierten Texten:}\\
+    Interpretation des Briefrumpfes
+
+\end{itemize}
+
+Ziel weiterer Forschungsaktivit"aten ist es, die Robustheit zu
+steigern und das Wissen, das die einzelnen Verfahren zur Interpretation ben"otigen,
+automatisch zu erwerben. Die Methoden werden f"ur weitere 
+konkrete Beispiele umgesetzt, u.a. auf Steuerbescheide (Unterst"utzung von Steuerberatern bei
+Einspr"uchen) und auf per Telefax eingehende Stra"senverkehrsmeldungen (Aktualisierung einer digitalen Stra"senkarte).
+
+\section{Einordnung der Arbeit in den Analyseablauf}
+
+Der bisherige Segmentierungsproze"s ging von der Annahme aus, da"s die Dokumentseite
+ausschlie"slich Text einer Schriftgr"o"se beinhaltet. 
+Es wurde die statistisch dominierende Zeichengr"o"se
+bestimmt (s.\ \BildRef{AnalyseBisherJetzt}), die 
+alle nachfolgenden Analysemethoden beeinflu"ste (Segmentierung in
+Zeilen, W"orter und Zeichen) \cite{Bohnacker93}. Diese Annahme f"uhrt bei Dokumenten
+mit deutlich variierenden Schriftgr"o"sen (wie in \BildRef{UlrichsProbleme}) zu Fehlern.
+Die bisherigen Methoden arbeiten zudem nur mit einspaltigem Text. 
+Bei mehreren Spalten mu"ste bisher jede einzelne Spalte manuell segmentiert werden, 
+wobei auf die logische Lesefolge nicht geachtet wurde.
+
+\Bild{AnalyseBisherJetzt}{8}{Vergleich der Segmentierungsabl"aufe}
+
+Um dies zu vermeiden, mu"s das Dokument in Bereiche eingeteilt werden, welche gleichartige
+(homogenen) Textobjekte enthalten. Aus diesen Bereichen k"onnen nun jeweils die f"ur die
+weitere Segmentierung wichtigen Gr"o"sen abgeleitet werden: Zeichengr"o"se, Strichdicke,
+Zeilenabstand, etc.
+
+Somit stellt diese Arbeit -- die Segmentierung in homogene Textbl"ocke (Paragraphen) --
+die logische und konsequente Fortsetzung und Verbesserung der bestehenden Methoden zur
+Dokumentanalyse dar.
+
+\Bild{UlrichsProbleme}{14}{Fehlerhafte Zeilensegmentierung durch global berechnete Parameter (Verbessertes Ergebnis durch vorgeschaltete Textblocksegmentierung siehe \protect\BildRef{UlrichsProblemGeloest} Seite \protect\pageref{eps:UlrichsProblemGeloest})}

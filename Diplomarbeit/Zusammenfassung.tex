@@ -1,0 +1,66 @@
+\chapter{Zusammenfassung}
+
+In dieser Diplomarbeit wurde ein Verfahren vorgestellt, welches ein Dokumentenbild
+in Textbl"ocke segmentiert. Die Textblockdefinition basiert
+auf den geometrischen Eigenschaften der in r"aumlicher N"ahe stehenden Zusammenhangsobjekte.
+Durch diese Textblocksegmentierung wurde erreicht, da"s nachfolgende
+Segmentierungsschritte (Zeilen, W"orter und Buchstaben) in ihrer Erkennungsleistung
+verbessert wurden, da ihnen nun als Eingangsdaten Textbl"ocke homogenen Inhalts zur Verf"ugnug
+stehen.
+
+Die verwendeten Methoden machen keine Einschr"ankungen bez"uglich der Layoutstruktur
+und der verwendeten
+Dokumentklasse. Die jeweiligen Parameter sind layoutunabh"angig bzw.\ passen sich 
+automatisch dem Dokument an. Mehrspaltige Layouts mit beliebiger Kontur der Textbl"ocke
+werden ber"ucksichtigt. Es wird vorausgesetzt, da"s die Dokumente nur 
+Textgebiete enthalten, eine Winkelkorrektur bereits vorgenommen wurde und da"s sie aus dem
+romanischen Sprachraum entstammen, d.h.\ die Schreibrichtung verl"auft von links nach rechts und von
+oben nach unten.
+
+Das Verfahren kn"upft an zwei bekannte Vorgehensweisen an: 
+Der Top--Down Ansatz (XY--Cut) versucht das Dokument rekursiv, entlang wei"sem 
+Zwischenraum zu trennen, und der Top--Down Ansatz (Smearing) 
+verbindet kleine Objekte zu gr"o"seren Bereichen. Um die Smearing Parameter unabh"angig von dem
+verwendeten Layout zu halten, werden sie, f"ur jedes beim XY--Cut entstandenen Gebiet separat,
+"uber den Zeilenabstand direkt aus dem Dokument berechnet. Das Smearing wird mit der
+morphologischen Operation Dilatation mit anschlie"sender Erosion (Closing) durchgef"uhrt. Um
+die Datenmenge bei diesem nichtlinearen Filter zu reduzieren, wird zuvor das Bin"arbild in
+seiner Aufl"osung um den Faktor acht in der Vertikalen und Horizontalen reduziert.
+
+Im Gegensatz zu bisherigen Verfahren wird in diesem Ansatz die Konsistenz der Textbl"ocke "uberpr"uft: 
+Textbl"ocke sind definiert als eine Menge von homogenen Zusammenhangsgebieten. Da die
+morphologischen Operationen alle Objekte verbinden, die in r"aumlicher N"ahe stehen, mu"s die
+Homogenit"at innerhalb der hypothetischen Textbl"ocke "uberpr"uft werden. Hierbei wird
+die mittlere Buchstabengr"o"se und --st"arke jeder Textzeile bestimmt und mit der ihr folgenden
+verglichen und ggf.\ der Textblock zwischen den zwei Zeilen getrennt.
+
+In einem letzten Segmentierungsschritt wird versucht Textbl"ocke zu verbinden, um eine m"oglichst
+kleine Menge von Textbl"ocken zu erhalten. Dabei wird die Graphenstruktur des Minimum Spanning
+Tree nach der Methode von Kruskal aufgebaut und anschlie"send Kante f"ur Kante abgearbeitet.
+Dieser Schritt wird solange wiederholt, bis ein station"arer Zustand erreicht ist
+(Relaxationsmethode).
+
+Im Anschlu"s werden die gefundenen Textbl"ocke nach ihrer logischen Lesefolge sortiert. Dabei
+wird eine Baumstruktur aufgebaut, die die hierarchische Struktur der Textbl"ocke
+beinhaltet. Bei der Sortierung werden Liniensegmente, wei"se horizontale Zwischenr"aume und Textrahmen ber"ucksichtigt.
+Die Lesefolge ergibt sich aus der Pre--Order Traversion der Baumstruktur.
+
+Das Verfahren wurde anhand einer Lernstichprobe von 47 Dokumenten sowie an einer
+Teststichprobe von 116 Dokumenten, bei der die Leistungsf"ahigkeit und Grenzen aufgezeigt wurden, 
+erarbeitet.
+Die implementierten Methoden zeigen konstant gute Ergebnisse (Erkennungsrate 96\%) 
+bei den verschiedensten Layouts (Gesch"aftsbriefe, wissenschaftliche Artikel, Zeitschriften,
+Tageszeitungen und Steuerbescheide). 
+Probleme bereiteten St"orungen durch Nicht--Textelemente. 
+Die L"osung dieses Problems w"are ein vorgeschaltetes 
+Text--Grafik--Unterscheidungs Modul, 
+wobei bis zu 5\% h"ohere Erkennungsraten erreicht werden k"onnten.
+Die Laufzeit der kompletten Textblocksegmentierung (XY--Cut, Smearing, Konsistenzpr"ufung und
+Sortierung) ist anh"angig von der Anzahl der Zusammenhangsgebiete und 
+betr"agt zwischen ca.\ 2 Sekunden f"ur einen Gesch"aftsbrief und ca.\ 11 Sekunden 
+f"ur DIN--A4--gro"se Ausschnitte aus Tageszeitungen (gemessen auf einer HP--PA Workstation).
+
+Die Algorithmen wurden in ANSI--C implementiert und in eine bestehende Softwareumgebung
+integriert. 
+
+

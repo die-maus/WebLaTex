@@ -1,0 +1,78 @@
+% !TEX root = DiplomArbeit.tex
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+%%                              D I P L O M A R B E I T                        %%
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+%%      von    Reiner Kräutle              Abteilung: F3M/T                    %%                    
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
+\documentclass[12pt,a4paper,twoside]{report}
+
+\usepackage[ngerman]{babel}
+\usepackage[hidelinks]{hyperref}
+\hypersetup{
+    pdftitle={Bestimmung von Textblocken in strukturierten Dokumenten auf der Basis von Zusammenhangsgebieten},
+    pdfsubject={Diplomarbeit},
+    pdfauthor={Reiner Kräutle}
+}
+
+\usepackage[top=3cm,bottom=3cm,left=2cm,right=2cm]{geometry}
+\usepackage{parskip}
+\usepackage{setspace}
+\setstretch{1.15}
+
+\usepackage{fancyhdr}
+\pagestyle{fancyplain}
+\fancyhf{}
+\fancyhead[LE]{\small \em \rightmark}
+\fancyhead[RO]{\small \em \leftmark}
+\fancyfoot[LE,RO]{\small \em \thepage}
+\renewcommand{\plainheadrulewidth}{0.4pt}
+\renewcommand{\plainfootrulewidth}{0.4pt}
+\renewcommand{\footrulewidth}{0.4pt}
+\addtolength{\headheight}{3pt}
+\renewcommand{\chaptermark}[1]{\markboth{\thechapter.\ \chaptername\ #1}{}}
+\renewcommand{\sectionmark}[1]{\markright{\thesection\ #1}}
+
+\usepackage{graphicx}
+\newcommand{\Bild}[3]{
+  \begin{figure}[htbp]
+    \vskip 2mm
+    \centerline{\includegraphics[width=#2cm]{Pictures/#1.eps}}
+    \caption{\label{eps:#1} #3}
+  \end{figure}
+}
+\newcommand{\BildHier}[3]{
+  \vskip 2mm
+  \centerline{\includegraphics[width=#2cm]{Pictures/#1.eps}}
+  \stepcounter{figure}
+  \begin{center}{\figurename\thefigure:~#3}\end{center}
+}
+\newcommand{\BildPur}[2]{
+  \centerline{\includegraphics[width=#2cm]{Pictures/#1.eps}}
+}
+
+\renewcommand*{\thefootnote}{\fnsymbol{footnote}}
+\def\figurename{Abb.}
+\newcommand{\BildRef}[1]{\figurename~\ref{eps:#1}}
+\newcommand{\KapRef}[1]{Kap.~\ref{#1}}
+\def\re{\hbox{$I\kern -0.275em R$}}
+
+\begin{document}
+%
+\include{Titelseite}
+\include{Inhaltsverzeichnis}
+\include{Einleitung}
+\include{Aufgabenbeschreibung}
+\include{GrundlegendeTechniken}
+\include{BestimmungTextbloecke}
+\include{BestimmungLesefolge}
+\include{Zusammenfassung}
+%
+\begin{appendix}
+  \include{Experimentierumgebung}
+  \include{DokumentKlassen}
+  \include{Literaturverzeichnis}
+\end{appendix}
+%
+\end{document}

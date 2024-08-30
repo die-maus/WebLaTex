@@ -1,0 +1,102 @@
+\thispagestyle{empty}
+%
+\BildPur{UniUlmLogoScanX}{4}
+%
+\begin{center}
+  \Large\bf
+  Bestimmung von Textbl"ocken in strukturierten
+  Dokumenten auf der Basis von Zusammenhangsgebieten
+\end{center}
+
+\vfill
+
+\begin{center}
+  \large
+  Diplomarbeit\\
+  von\\
+  Reiner Kr"autle
+\end{center}
+
+\vfill
+
+\begin{center}
+  Abteilung Allgemeine Elektrotechnik und Mikroelektronik\\
+  Universit"at Ulm\\
+  August 1995
+\end{center}
+
+\newpage\thispagestyle{empty}
+
+\begin{center}
+  \large
+  Abteilung Allgemeine Elektrotechnik und Mikroelektronik\\
+  Universit"at Ulm
+\end{center}
+\vfill
+
+\centerline{09.\ Februar bis 08.\ August 1995}
+\vfill
+
+\begin{center}
+  \begin{large}
+    \begin{tabular}{rl}
+      Bearbeiter:                & Reiner Kr"autle              \\[5mm]
+      Pr"ufer:                   & Prof.~Dr.--Ing.~A.~Rothermel \\[5mm]
+      Betreuer in der Industrie: & Dr.~Thomas Bayer,            \\
+                                 & Daimler--Benz AG, F3M/T
+    \end{tabular}
+  \end{large}
+\end{center}
+
+\clearpage{\thispagestyle{empty}\cleardoublepage}
+\thispagestyle{empty}
+\begin{small}
+  \centerline{\bf Kurzfassung}
+
+  Es wird ein Verfahren zur Segmentierung des Dokumentbildes in Textbl"ocke ausgehend
+  von Zusammenhangsobjekten beschrieben.
+  Voraussetzung ist, da"s die Dokumente nur maschinengeschriebene Textgebiete
+  enthalten, eine Winkelkorrektur bereits vorgenommen wurde und da"s sie aus dem romanischen
+  Sprachraum entstammen. Bez"uglich der Layoutstruktur wird keine Einschr"ankung gemacht und die
+  Verfahren werden automatisch mit den vorliegenden Daten parametriert.
+
+  Textbl"ocke werden definiert als eine Menge von homogenen Zusammenhangsgebieten. Sie sind
+  charakterisiert durch die mittlere Buchstabengr"o"se und --st"arke, das umschreibende Rechteck
+  und der Position innerhalb der logischen Lesefolge.
+
+  Das Verfahren basiert auf einer Kombination der Top--Down--Analyse (XY--Cut) und der
+  Bottom--Up--Analyse (Subsampling und Smearing).
+  Die ben"otigten Smearing--Parameter werden "uber den Zeilenabstand lokal
+  (innerhalb der bei den XY--Cuts entstandenen Gebieten) aus dem Dokument berechnet.
+  Die Textblockhypothesen werden in den folgenden beiden Schritten bez"uglich zweier
+  Homogenit"atskriterien "uberpr"uft: Textblockhypothesen werden aufgespalten, wenn die
+  mittlere Buchstabenh"ohe oder --st"arke in folgenden Zeilen stark variiert;
+  Textblockhypothesen werden zusammengefa"st, wenn r"aumlich benachbarte homogene
+  Textblockhypothesen in vorigen Schritten getrennt wurden.
+  Im Anschlu"s werden die gefundenen Textbl"ocke unter Ber"ucksichtigung ihrer geometrischen Struktur nach ihrer logischen Lesefolge sortiert.
+
+  Das Stichprobenmaterial umfa"st 163 Dokumente aus den Klassen der Gesch"aftsbriefe,
+  wissenschaftlichen Artikel, Zeitschriften, Tageszeitungen und Steuerbescheide,
+  aufgeteilt in eine Trainingsstichprobe von 47 Dokumenten,
+  an derer die Verfahren erarbeitet und parametriert wurden, und in eine Teststichprobe
+  von 116 Dokumenten, an derer die Leistungsf"ahigkeit und Grenzen aufgezeigt wurden.
+  Die Verfahren zeigen gute bis sehr gute Ergebnisse bei den betrachteten Dokumentklassen.
+  Die Erkennungsrate (Verh"altnis richtig erkannter Textbl"ocke zu der Gesamtanzahl der erkannten
+  Textbl"ocke)
+  liegt f"ur alle Dokumentklassen im Mittel zwischen 90 und 95\%.
+\end{small}
+\vfill
+{\bf Erkl"arung}
+
+Hiermit erkl"are ich, da"s ich diese Diplomarbeit selbstst"andig verfa"st und keine anderen
+als die angegebenen Quellen und Hilfsmittel verwendet habe.
+
+\vspace*{2cm}
+
+Ulm, den 08.\ August 1995\hfill
+\begin{minipage}[t]{5cm}
+  \centerline{Reiner Kr"autle}
+  \centerline{\small (Matr.~Nr.~223875)}
+\end{minipage}
+\hspace*{\fill}
+\clearpage{\thispagestyle{empty}\cleardoublepage}

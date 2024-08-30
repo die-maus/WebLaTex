@@ -1,0 +1,161 @@
+\chapter{Grundlegende Techniken}
+\label{GrundlegendeTechniken}
+
+Die in diesem Abschnitt beschriebenen Techniken dienen als Grundlage f"ur die Layoutanalysemethoden 
+in Kapitel \ref{LayoutanalyseMethoden}. Kapitel \ref{Morphologie} und \ref{Zusammenhangsanalyse}
+stellen Methoden der Bildverarbeitung vor:
+
+\begin{description}
+  \item[Ikonische Bildverarbeitung:] Die ikonische Bildverarbeitung besch"aftigt sich mit 
+  Operationen, die ausschlie"slich mit einzelnen Bildpunkten arbeiten (\KapRef{Morphologie}).
+
+  \item[Symbolische Bildverarbeitung:] Nach der Transformation des Bin"arbildes in den
+    symbolischen Bereich stehen den symbolischen Bildverarbeitungsmethoden Objekte
+    mit Informationen "uber ihre Kontur und Farbe zur Verf"ugung
+    (\KapRef{Zusammenhangsanalyse} und \ref{Homogenitaet}).
+    
+\end{description}
+Die Histogrammanalyse wird in Kapitel \ref{Histogrammanalyse} als Methode zur Bestimmung einer
+Verteilungsfunktion aus einer Stichprobe vorgestellt.  
+Diese grundlegenden Verfahren sind nicht Gegenstand dieser Arbeit, Implementationen hiervon existieren bereits in der verwendeten Softwareumgebung.
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+\section{Morphologische Operationen}
+\label{Morphologie}
+
+In diesem Kapitel werden Methoden der ikonischen Bildverarbeitung beschrieben. Diese
+Verfahren ben"otigen als Eingangsdaten ein Bin"arbild und liefern als Ergebnis
+wiederum ein Bin"arbild. 
+
+Lineare Filtermethoden (wie z.B.\ Tiefpa"sfilter) arbeiten in einem Wertebereich
+au"serhalb des bei der Klassifikation von Schriftzeichen verwendeten Bereichs von
+nur zwei Grauwerten. Diese Methoden liefern bei der Anwendung auf bin"are Muster
+im allgemeinen keine Ergebnisse, deren Werte ebenfalls wieder bin"ar sind. Dies mu"s
+in einer nachfolgenden Schwellwertoperation sichergestellt werden. Eine andere
+M"oglichkeit besteht darin, f"ur bin"are Muster spezialisierte nichtlineare Operationen
+zu verwenden \cite{Niemann83}. Beispielsweise haben lineare Operationen bei der Gl"attung
+den Nachteil, da"s sie nicht nur hochfrequente St"orungen beseitigen, sondern auch 
+Bildkonturen verschleifen. Um diesen Nachteil zu vermeiden wurden nichtlineare Operationen
+entwickelt, die auf der Ordnung der Funktionswerte einer kleinen Nachbarschaft beruhen.
+Dieses ist auch das Prinzip der allgemeinen Rangordnungsoperationen. 
+Man betrachtet einen Funktionswert
+$f_{jk} \in \re$ aus einem zweidimensionalen Raum in der Folge $[f_{jk}]$ und 
+bezeichnet mit $N_M$ eine Nachbarschaft von $f_{jk}$, die $M$ Werte enth"alt,
+\begin{eqnarray*}
+N_M &=& \left\{ f_{j+\mu, k+\nu} \;|\; \mu = 0, \pm 1,\ldots, \pm m;\; \nu = 0, \pm 1, \ldots, \pm n \right\},\\
+M   &=& (2m + 1)(2n + 1).
+\end{eqnarray*}
+Die Elemente von $N_M$ werden der Gr"o"se nach geordnet, wobei der kleinste Wert aus $N_M$
+mit $r_1$ bezeichnet wird, das n"achstgr"o"sere mit $r_2$ und so weiter. Dieses ergibt die
+Rangordnung der um $f_{jk}$ liegenden Funktionswerte
+$$R_{jk} = \left\{ r_1, r_2, \ldots, r_M \;|\; r_\nu \in N_M,\;r_\nu \le r_{\nu+1},\;\nu = 1,\ldots,M \right\}.$$
+Eine Rangordnungsoperation ist definiert durch 
+$$h_{jk} = \varphi\:(R_{jk}).$$
+Drei spezielle Operationen sind
+\[ \begin{array}{llcl}
+\mbox{Erosion}          & h_{jk} &=& r_1,\\
+\mbox{Median}           & h_{jk} &=& r_{(M + 1) / 2},\\
+\mbox{Dilatation\qquad} & h_{jk} &=& r_M.
+\end{array} \]
+Angewandt auf Bin"arbilder mit $f_{jk} \in \{ 0, 1 \}$ lassen sich diese Operationen wie folgt anschaulich beschreiben:
+\begin{description}
+  \item[Erosion:] Ein Bildpunkt wird dann gesetzt, wenn {\em alle} Bildpunkte innerhalb 
+  der Maske $N_M$
+  gesetzt sind. Somit schrumpfen Schwarzbereiche zusammen (\BildRef{Erosion}).
+  \Bild{Erosion}{7}{Ausgangsbild links, Ergebnis der Erosion rechts}
+  \item[Median:]  Ein Bildpunkt wird dann gesetzt, wenn mindestens die {\em H"alfte} der Bildpunkte 
+  innerhalb der Maske gesetzt ist. Dadurch l"a"st sich Rauschen (Pepper Noise) von einer
+  Fl"ache mit dem Fl"acheninhalt $g$ l"oschen, wenn $g \le \frac{M}{2}$ gilt.
+  \item[Dilatation:] Ein Bildpunkt wird dann gesetzt, wenn {\em mindestens ein} Bildpunkt 
+  innerhab der Maske gesetzt ist. Somit breiten sich Schwarzbereiche aus.
+\end{description}
+
+Um St"orungen, die eine gewisse Gr"o"se nicht "uberschreiten, zu beseitigen, k"onnen Dilatation und
+Erosion kombiniert eingesetzt werden:
+
+\begin{description}
+  \item[Opening:] Die Aufeinanderfolge von Erosion und Dilatation wird als {\em Opening\/}--
+  Operation bezeichnet. Rauschen, bedingt durch eine schlechte Vorlagenqualit"at,
+  kann mit diesem Filter abgeschw"acht werden (\BildRef{Opening}).
+  
+  \Bild{Opening}{7}{Reduzierung von Rauschen mit dem Opening--Filter.}
+  
+  \item[Closing:] Die umgekehrte Abfolge, also Dilatation mit anschlie"sender Erosion ist
+  als \mbox{\em Closing\/} definiert. Sie dient dazu Zwischenr"aume zu schlie"sen, wie zum Beispiel
+  das Verbinden zerbrochener Buchstaben (\BildRef{Closing}).
+  
+  \Bild{Closing}{3.5}{Zerbrochene Buchstaben werden durch die Closing--Operation verbunden} 
+\end{description}
+
+%\clearpage
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+\section{Zusammenhangsanalyse}
+\label{Zusammenhangsanalyse}
+
+Ausgangsbasis f"ur die Segmentierung ist ein Bin"arbild. Es besteht aus einer Matrix aus
+kleinen quadratischen Bildelementen, denen jeweils ein bestimmter Farbwert, entweder schwarz
+oder wei"s, zugeordnet ist. Jedes Bildelement, im weiteren Pixel genannt, l"a"st sich "uber
+eine Koordinatenangabe in einem orthogonalen Koordinatensystem ansprechen 
+(s.~\BildRef{Binaerbild}). Merkmale "uber den Inhalt des Bildes (wie z.B.\ die Buchstabenh"ohe)
+lassen sich hierbei nur schwer berechnen.
+
+\Bild{Binaerbild}{3}{Repr"asentation eines Bin"arbildes als Pixelmatrix}
+
+Die Zusammenhangsanalyse, BCC--Analyse ({\em B\/}inary {\em C\/}onnected {\em C\/}omponent)
+genannt, "uberf"uhrt ein Rasterbild nicht wiederum in ein anderes Rasterbild, sondern in
+Bildobjekte. Dabei werden aus der Bildmatrix topologisch
+zusammenh"angende Mengen schwarzer Pixel, die sogenannten Zusammenhangskomponenten, extrahiert.
+Dieser Verfahrensschritt ist datenerhaltend und deshalb reversibel. Es wird
+eine rechnerinterne Darstellung mit Hilfe einer hierarchischen Datenstruktur verwendet. In
+ihr werden die R"ander (Kontur) eines Objekts sowie die {\em Enthaltensein\/}--Relation von
+inneren Konturen zu ihren "au"seren Konturen vermerkt. Diese Darstellung erm"oglicht eine
+effiziente Berechnung von Merkmalen (s.~\KapRef{Homogenitaet}), die f"ur
+die Layoutanalyse ben"otigt werden. 
+
+Die Kanten der Kontur bestehen
+ausschlie"slich aus waagerechten und senkrechten Ge\-ra\-den\-st"u"cken, 
+wobei einer senkrechten Kante
+immer eine waagerechte folgt. Des weiteren kreuzen sich keine Kanten und die Kontur
+ist stets geschlossen.
+Ineinanderliegende Konturen werden als "ubereinanderliegende, sich "uberdeckende Zusammenhangsobjekte
+alternierender Farben interpretiert. Diese hierarchische Zuordnung wird {\em Vater--Sohn} Relation
+genannt; weiterhin wird zwischen Objekten, die unmittelbar in einem gemeinsamen
+Zusammenhangsgebiet liegen, eine {\em Bruder} Beziehung definiert (s.~\BildRef{BccHierarchie}).
+
+\Bild{BccHierarchie}{11.5}{Veranschaulichung der Hierarchiebeziehungen}
+
+Neben der Kontur, der Farbe und den Hierarchiebeziehungen wird 
+au"serdem das umschreibende Rechteck jedes Zusammenhangsgebietes berechnet 
+({\em BCC--Bounding Box\/}).
+Diese Rechtecke sind in der Layoutanalyse von besonderer Bedeutung 
+(s.~\BildRef{BccBoxes}). Weitere Informationen und Implementierungsdetails sind \cite{MaOb90} 
+zu entnehmen.
+
+\Bild{BccBoxes}{13}{Bin"arbild, BCC--Konturen, umschreibende Rechtecke (v.l.n.r.)}
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+\section{Histogrammanalyse}\label{Histogrammanalyse}
+
+Es sei eine Stichprobe $(x_1,\ldots,x_n)$ mit dem Merkmal $X$ gegeben. Die Verteilung von $X$
+sei nicht bekannt. Um bei einem qualitativen Merkmal eine Vorstellung von dieser Verteilung
+zu erhalten, konstruiert man das sogenannte {\em Histogramm}.
+
+Man f"uhrt eine Zerlegung der reellen Achse in endlich viele aneinander grenzende Intervalle 
+$\Delta_1,\ldots,\Delta_k$, sogenannte {\em Klassen}, durch. Es wird nachgez"ahlt, wieviele
+Werte $x \in X$ in $\Delta_j \; (1 \le j \le k)$ liegen. Die Anzahl $m_j$ der Objekte wird
+{\em Klassenh"aufigkeit\/} genannt. 
+"Uber $\Delta_j$ wird ein Rechteck der H"ohe $\frac{m_j}{n}$ gezeichnet
+(relative Klassenh"aufigkeiten). Das so entstehende Stufenbild wird als Histogramm 
+zum Merkmal $X$ bezeichnet.
+
+Eine h"aufige Anwendung ist das Finden von Klassenh"aufigkeitsmaxima ({\em Peaks\/}) innerhalb der Verteilung
+(z.B.\ bei der Zeilensuche \KapRef{Zeilenabstand}).
+Hier empfiehlt es sich einen sogenannten {\em Gravitationsfilters\/} anzuwenden.
+Bei diesem iterativen Filter wandern die
+Histogrammeintr"age in Richtung der gr"o"sten `Massen', d.h.\ in Richtung der gr"o"sten Anh"aufung von
+Histogrammeintr"agen. Der Einflu"s der `Schwerkraft' (Filterradius) ist variabel einstellbar.
+Durch die wiederholte Anwendung werden die Maxima herausgearbeitet, und man erh"alt schlie"slich ein 
+Histogramm, das idealerweise nur noch aus einzelnen Peaks besteht (s.\ \BildRef{DemoHistogramm}).
+
+\Bild{DemoHistogramm}{7}{Histogramm ungefiltert (links) und nach der Gravitationsfilterung}
+

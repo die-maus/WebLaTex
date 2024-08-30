@@ -1,0 +1,172 @@
+\section{Stand der Technik in der Layoutanalyse}\label{LayoutanalyseMethoden}
+
+Die in der Literatur beschriebenen Verfahren zur Segmentierung von Layoutbl"ocken
+lassen sich grob in zwei Vorgehensweisen unterteilen (s.\ \BildRef{VergleichTopDownBottomUp}):
+
+\Bild{VergleichTopDownBottomUp}{8}{Top--Down Verfahren (links) und Bottom--Up Verfahren.}
+
+\subsection{Top--Down Vorgehen}\label{XYCutTheroie}
+
+Die Analyse nach der Top--Down Strategie beginnt typischerweise mit einer sehr groben
+Einteilung des Dokuments.
+Diese Hypothesen werden in den nachfolgenden Schritten weiter verfeinert und die Analyse endet
+bei der niedersten Stufe, den Pixeln oder Zusammenhangsgebieten.
+
+George Nagy schlug in \cite{Nagy84} eine Methode vor, mit der ein
+Dokument in eine hierarchische Datenstruktur (von den Autoren {\em XY--Tree\/} genannt)
+"uberf"uhrt werden kann:
+Durch alternierende Schnitte parallel zu der X-- bzw.\ Y--Achse ({\em XY--Cut\/}) wird die Seite in zwei oder mehrere Unterbl"ocke aufgeteilt (s.\ \BildRef{XYCutIdee}).
+Dieses Verfahren wird so lange rekursiv angewandt, bis eine Seite nicht weiter segmentiert werden
+kann. Die Position der Schnitte wird durch ein horizontales bzw.\ vertikales Projektionsprofil
+der schwarzen Pixel bestimmt.
+
+\Bild{XYCutIdee}{11}{Idee der rekursiven Schnitte (XY--Cuts)}
+
+%\pagebreak
+{\bf Vorteile:}
+\begin{itemize}
+  \item Anschauliche Vorgehensweise
+  \item Transformation des Dokuments in eine leicht handhabbare Datenstruktur
+\end{itemize}
+
+{\bf Nachteile:}
+\begin{itemize}
+  \item Nur f"ur {\em Manhattan--Layouts} geeignet. Dies sind Layouts, die ausschlie"slich
+        durch eine Menge von horizontalen und vertikalen Geraden, die durch wei"se Gebiete laufen,
+        getrennt werden k"onnen, vergleichbar mit der Stra"senanordnung von Manhattan
+        (Nicht--Manhattan--Layout s.\ \BildRef{DemoXYCutError} und
+        \ref{eps:ZoningErg2} auf Seite \pageref{eps:ZoningErg2}).
+
+  \item Erzeugung des Projektionsprofils aus dem Bin"arbild ist wegen der gro"sen Datenmengen sehr zeitintensiv.
+
+  \item Die Bestimmung der Schnittpositionen, d.h.\ der Minima, innerhalb des Projektionsprofils
+        ist, speziell bei einer sehr feinen Segmentierung, problematisch.
+
+\end{itemize}
+
+\Bild{DemoXYCutError}{7}{Unl"osbares Problem f"ur die XY--Cut Analyse}
+
+\subsection{Bottom--Up Vorgehen}\label{BottomUp}
+
+Diese Methode schreitet den umgekehrten Weg: Ausgehend von der kleinsten Detailierungsstufe
+(Pixel oder Zusammenhangsgebiete) werden immer gr"o"sere Bl"ocke gebildet --
+Buchstaben zu W"ortern, W"orter zu Zeilen, Zeilen zu Textbl"ocken -- solange,
+bis die gesamte Seite bearbeitet wurde.
+
+\begin{enumerate}
+
+  \item {\bf Smearing:}\\
+        Ziel des Smearings ist, kleine Schwarzgebiete (Buchstaben, W"orter und Zeilen) zu
+        gr"o"seren Bl"ocken zu verschmelzen (s.\ \cite{Wahl} und \BildRef{DemoSmearing}). Wie der
+        Name erkennen l"a"st, werden die Schwarzfl"achen des Bin"arbildes in horizontaler und/oder vertikaler
+        Richtung {\it verschmiert}. Ein sehr wichtiger Faktor f"ur zufriedenstellende Ergebnisse
+        ist hierbei die Wahl der Parameter (Smearing--Window), um nicht f"alschlicherweise mehrere
+        nebeneinanderliegende Spalten zu verbinden. Da bei einer statischen Festlegung die
+        unterschiedlichen Layoutstrukturen nicht ber"ucksichtigt werden k"onnen, ist eine direkte
+        Parameterberechnung aus dem Dokument unbedingt notwendig.\label{Smearing}
+
+        {\bf Vorteile:}
+        \begin{itemize}
+          \item einfache Implementierung mittels der morphologischen Operationen Dilatation und Erosion (Closing)
+          \item gute Ergebnisse bei einer Vielzahl von Layouttypen
+        \end{itemize}
+
+        {\bf Nachteile:}
+        \begin{itemize}
+          \item Lokale Parametrierung notwendig.
+          \item Das Smearing verbindet jede Art von Objekten, so da"s Konsistenzpr"ufungen notwendig
+                werden.
+          \item Da die Smearingalgorithmen auf der Pixelebene mit einem gro"sen Datenvolumen arbeiten,
+                sind die Laufzeiten entsprechend hoch.
+        \end{itemize}
+
+        \Bild{DemoSmearing}{8}{Smearing an einem Beispiel.}
+
+  \item {\bf Unterabtastung (Subsampling):}\\
+        Hierbei wird das Bin"arbild in nicht"uberlappende Rechtecke
+        konstanter Gr"o"se eingeteilt. Jeder dieser Bl"ocke wird nun auf einen Pixel abgebildet
+        (reduziert). Beispiele siehe \BildRef{DemoSubsampling} und \BildRef{Subsampling} auf Seite
+        \pageref{eps:Subsampling}.\label{Subsampling}
+
+        Diese Operation wird Rangordnungsfilter genannt. Zun"achst wird f"ur jedes Rechteck seine
+        Rangordnung bestimmt, d.h.\ die Anzahl der schwarzen Pixel gez"ahlt. Ist diese
+        Anzahl gleich oder gr"o"ser einem bestimmten Schwellwert, so wird das korrespondierende Pixel
+        gesetzt, ansonsten gel"oscht.
+
+        Das Resultat der Datenreduzierung ist eine
+        h"ohere Verarbeitungsgeschwindigkeit (siehe \KapRef{Speed}) nachfolgender
+        Algorithmen wie z.B.\ morphologischer Operationen
+        (eine mit 300dpi digitalisierte DIN--A4--Seite hat
+        ein Datenvolumen von etwa 1MB -- bei einer Reduzierungsrate von 64:1, d.h.\ ein 8x8 Pixel gro"ser
+        Block wird auf ein Pixel abgebildet, verbleiben noch 17KB).
+        Zus"atzlich entstehen gr"o"sere
+        zusammenh"angende Schwarzgebiete "ahnlich denen beim Smearing.
+
+        \Bild{DemoSubsampling}{8}{Unterabgetastetes Bin"arbild (wieder in Originalgr"o"se)}
+
+  \item {\bf Zusammenhangsobjekte verbinden:}\\
+        Der erste Schritt bei dieser Methode ist die Transformation des Bin"arbildes in
+        Zusammenhangsobjekte. Um eine Segmentierung in hierarchische,
+        ineinander aufbauende Bl"ocke zu erhalten, m"u"sen die BCC--Objekte in einem zweiten Schritt
+        zu gr"o"seren Gruppen verbunden werden. Die dazu ben"otigten Regeln lassen sich aus Abstandsma"sen,
+        Gr"o"senverh"altnissen und deren geometrischen Strukturen herleiten (s.\ \KapRef{Zusammenfassen}).
+
+        \pagebreak[3]
+        {\bf Probleme:}
+        \begin{itemize}
+          \item Ausgehend von nur einzelnen BCC--Objekten ist es schwierig, verl"a"sliche Aussagen
+                "uber den Grad ihrer "Ahnlichkeit zu machen, da die Statistik sehr unsicher ist, wenn
+                nur wenige Elemente zur Verf"ugung stehen.
+          \item Da Dokumente mehrere tausend Zusammenhangsobjekte enthalten k"onnen, ist
+                der Vorgang des Verbindens zeitaufwendig.
+        \end{itemize}
+
+\end{enumerate}
+
+\subsection{Hybride Vorgehensweisen}
+
+Ferner existieren Methoden, die sich nicht eindeutig in obige zwei Sparten einordnen lassen.
+\begin{enumerate}
+  \item
+        Ein Ansatz hybrider Vorgehensweisen besteht darin, nicht die schwarzen Gebiete des Vordergrundes,
+        sondern den wei"sen Hintergrund zu untersuchen. In aufwendigen Layout\-strukturen, bei denen Textspalten sehr nahe beieinander stehen, dienen d"unne schwarze Linien und wei"se Fl"achen als Layoutbegrenzungen.
+
+        \begin{itemize}
+          \item Henry Baird schl"agt in \cite{Baird92} vor, die gefundenen wei"sen Rechtecke zu sortieren und
+                ihrer Reihenfolge nach bis zu einer Schwelle wieder zu vereinigen (vom Autor {\em
+                    `global--to--local'} Strategie genannt), so da"s schrittweise die Untergliederung verfeinert
+                wird. Probleme bereitet der rechtzeitige Abbruch der
+                Vereinigungsphase sowie das Design der Sortierreihenfolge
+                (Regel: `gro"se' sowie `lang und schmale' Rechtecke werden zuerst verbunden).
+
+          \item Masayuki Okamoto \cite{Okamoto93} verbindet Zusammenhangsobjekte, die zwischen Linien
+                und wei"sem Zwischenraum liegen, zu Bl"ocken. Hier treten "ahnliche Probleme, wie bei den
+                zuvor besprochen Bottom--Up Methoden, auf.
+        \end{itemize}
+
+  \item
+        J.~Wieser und A.~Pinz schlagen in \cite{Wieser93} eine mehrmalige Abfolge von Smearing und XY--Cuts vor:
+        Durch Smearing mit einem relativ gro"sen Smearing--Window sollen viele Objekte auf dem Rasterbild
+        zu gro"sen Schwarzbereichen verbunden werden. Diese Schwarzbereiche werden zun"achst durch
+        rekursieve XY--Cuts in kleinere St"ucke zerteilt, auf die im Originalbild wiederum Smearing mit
+        anschlie"senden XY--Cuts angewandt wird. Die dabei ben"otigten Parameters"atze werden aus diesen
+        kleinen Bl"ocken gewonnen.
+        Eine Zusammenfassung zerbrochener Bl"ocke bildet den Schlu"s der Segmentierung.
+
+          {\bf Vorteil:}
+        \begin{itemize}
+          \item Lokale Berechnung der Smearing Parameter direkt aus dem Dokument (nur beim zweiten
+                Smearing). Dadurch sind die Verfahren relativ robust gegen"uber verschiedenen Schriftgr"o"sen
+                innerhalb eines Dokuments.
+        \end{itemize}
+
+        \pagebreak[3]
+        {\bf Nachteile:}
+        \begin{itemize}
+          \item Zweimaliger zeitaufwendiger Smearing-- und XY-Cut--Proze"s.
+          \item Es erfolgt keine Konsistenzpr"ufung.
+          \item Mittels XY--Cuts k"onnen nur Bl"ocke getrennt werden, bei denen ein horizontaler
+                oder vertikaler Durchschu"s (also eine Leerzeile oder --spalte) existiert. Bei "uberlappenden
+                Objekten scheitert das Verfahren.
+        \end{itemize}
+\end{enumerate}

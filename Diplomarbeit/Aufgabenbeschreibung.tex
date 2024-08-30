@@ -1,0 +1,57 @@
+\chapter{Aufgabenbeschreibung}
+
+Eine wesentliche Teilaufgabe bei der Analyse eines Textdokuments ist die Segmentierung
+des Dokumentbildes in Textbl"ocke ({\em Zoning\/}). Wenn die Textbl"ocke bestimmt sind, k"onnen
+die Zeilen, W"orter und die Schriftzeichen in diesem Textblock synthetisiert und somit
+auch klassifiziert werden.
+
+Die Aufgabe der Diplomarbeit besteht darin, die in der Literatur bekannten Verfahren
+zur Segmentierung in Textbl"ocke zu sichten (\KapRef{LayoutanalyseMethoden}), geeignete
+Verfahren f"ur die zu bearbeiteten Dokumenttypen (Anhang \ref{DokuKlassen}) 
+auszuw"ahlen, zu modifizieren und geeignet zu kombinieren.
+Die Erkennungsleistung des entwickelten Segmentierungsverfahrens und deren Parameter
+sollen an einer Lernstichprobe optimiert und an einer Teststichprobe deren Leistungsf"ahigkeit
+und Grenzen aufgezeigt werden (\KapRef{ErgebnisZoning}).
+
+Die Basis der zu entwickelnden Verfahren bilden Zu\-sammen\-hangs\-objekte
+(\KapRef{Zusammenhangsanalyse}), die das Bin"arbild durch Konturen dieser Gebiete kodieren.
+Diese Vielzahl dieser primitiven Objekte -- von 1000 bis weit "uber 10000 -- mu"s
+zu Textbl"ocken mit homogenen Objekten zusammengefa"st werden. Homogenit"at bezieht
+sich dabei auf die Eigenschaften, die sich aus den Zusammenhangsobjekten ableiten
+lassen (\KapRef{Homogenitaet}). Insbesondere soll mehrspaltiges Layout unterst"utzt und die
+nat"urliche Abfolge der Textbl"ocke ermittelt werden (\KapRef{Lesefolge}). 
+
+Die entwickelten Algorithmen werden in die bestehende Entwicklungsumgebung
+(NeXT Workstation unter einer grafischen Programmierumgebung) eingebunden 
+(Anhang \ref{Experimentierumgebung}),
+die die Entwicklung von Verfahren durch eine Vielzahl von bestehenden Software--Moduln unterst"utzt.
+
+\newpage
+{\large \bf Anforderungen}\label{Anforderungen}
+
+Folgende Anforderungen sollen an die zu erarbeitenden Methoden gestellt werden:
+
+\begin{itemize}
+
+  \item Hauptanwendung: Gesch"aftsbriefe aus dem Umfeld {\em Investor Relations\/}
+        (Anfragen bez"uglich Gesch"aftsberichte), wissenschaftliche 
+	Ver"offentlichungen, Zeitschriften, Tageszeitungen und Steuerbescheide.
+	Typische Beispiele dieser Dokumentklassen siehe Anhang \ref{DokuKlassen}.
+
+  \item Mehrspaltiges Layout mit beliebigem Konturverlauf.
+
+  \item Dokumente beinhalten ausschlie"slich Textgebiete und sind im Winkel horizontal
+  ausgerichtet.
+  
+  \item Dokumente sind dem romanischen Sprachraum entnommen, d.h.\ ihre Schreibrichtung ist
+        von links nach rechts, und von oben nach unten.
+  
+  \item Das zu entwickelnde Verfahren soll nur layoutunabh"angige oder selbstadaptierende
+  Parameter verwenden.
+	
+  \item Transparenz der Parameter, d.h\ alle (soweit sinnvoll) Parameter sollen dem Benutzer
+        zug"anglich und vor Beginn der Analyse ver"anderbar sein.
+	
+  \item Integration in die bestehende Entwicklungs-- bzw.\ Experimentierumgebung.
+  
+\end{itemize}

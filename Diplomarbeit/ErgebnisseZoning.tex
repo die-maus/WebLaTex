@@ -1,0 +1,545 @@
+\section{Segmentierungsergebnisse}\label{ErgebnisZoning}
+
+\subsection{Lern-- und Teststichprobe}
+Um die Leistungsf"ahigkeit, d.h.\ sowohl St"arken als auch Schw"achen,
+aufzuzeigen, sind die Verfahren an 163 unterschiedlichen Dokumenten und Datens"atzen getestet worden.
+Die Stichproben umfassen f"unf verschiedene Dokumentklassen, mit jeweiligen Besonderheiten
+bez"uglich ihres Layouts (Beispiele siehe Anhang \ref{DokuKlassen}):
+
+\begin{description}
+  \item[Gesch"aftsbriefe:]Einspaltig, variables Layout, gemischtes Vorkommen vom
+  Pro\-por\-tio\-nal-- und Nichtproportionalschrift,
+  sehr variable Schriftgr"o"sen, Nicht--Textelemente wie Unterschrift, handschriftliche Anmerkungen,
+  Firmenlogos.
+  \item[Wissenschaftliche Artikel:]Ein-- bis dreispaltig, klar strukturiertes Manhattan--Layout,
+  Proportionalschrift, gleichm"a"sige Schriftgr"o"se (au"ser "Uberschriften),
+  Nicht--Text\-ele\-mente wie Diagramme, Tabellen, Formeln.
+  \item[Zeitschriften:]Ein-- bis vierspaltig, variables Nicht--Manhattan--Layout,
+  Proportionalschrift, gleichm"a"sige Schriftgr"o"se (au"ser "Uberschriften), trennende Liniensegmente,
+  Nicht--Textelemente wie Diagramme, Tabellen, Photos.
+  \item[Tageszeitungen:]Bis zu sechsspaltig, klar strukturiertes Layout, Proportionalschrift,
+  gleichm"a"sige Schriftgr"o"se (au"ser "Uberschriften), viele trennende Liniensegmente, nahe 
+  aneinandergrenzende Textspalten,
+  Nicht--Textelemente wie Diagramme, Tabellen, Formeln, Halbtonbilder.
+  \item[Steuerbescheide:]Ein-- bis zweispaltig, Text in Tabellenform, Nichtproportionalschrift,
+  gleichm"a"sige Schriftgr"o"se, Nicht--Textelemente wie Tabellen, Stempel, handschriftliche
+  Anmerkungen.
+\end{description}
+
+Anhand einer Lernstichprobe von 47 zuf"allig ausgew"ahlten Dokumenten aus den oben 
+genannten Klassen wurden die Verfahren getestet und
+die Parameter optimiert. Die St"arken und Schw"achen wurden an einer Teststichprobe von einem Satz
+von 116 unbekannten Dokumenten aufgezeigt.
+
+Um die berechneten Ergebnisse automatisch bewerten zu k"onnen, mu"sten Referenzdaten erzeugt werden.
+Dazu wurden alle Dokumente beider Stichproben manuell in rechteckige Gebiete eingeteilt und
+entweder mit dem Namen "`Text"' oder "`Nicht--Text"' beschriftet (engl.\ {\em to label\/}).
+Jedes dieser Gebiete ({\em Labels\/}) ist somit durch seinen Namen
+und sein umschreibendes Rechteck charakterisiert.
+
+Bei der manuellen Einteilung der Dokumente stellte sich die Frage nach der Definition
+eines Textblocks. Der Leser kann als Beispiel diese und die n"achste Dokumentseite heranziehen. 
+Bei der nummerierten Liste k"onnte eine Textblocksegmentierung
+auf mehrere Arten erfolgen: Entweder {\em logisch\/}, d.h.\ jeder
+einzelne Aufz"ahlungspunkt wird in einem Textblock untergebracht, oder {\em geometrisch\/}, d.h.\
+die gesamte Liste entspricht, da sie homogenen Text enth"alt, einem einzigen Block. 
+Kombinationen von logischer und geometrischer Segmentierung sind ebenfalls
+vorstellbar. Je komplexer das Dokumentlayout, desto uneindeutiger ist die Aufgabe. Das Spektrum
+reicht von relativ einfach zu segmentierenden wissenschaftlichen Artikeln bis zu dem
+Extremfall der Steuerbescheide, die u.a.\ viele Tabellen enthalten. 
+Wie sollen diese Tabellen segmentiert werden?
+Eine Vielzahl vom M"oglichkeiten bietet sich an: ein Block
+f"ur die gesamte Tabelle, ein Block f"ur jede Zeile bzw.\ Spalte oder ein Block f"ur jeden
+einzelnen Tabelleneintrag.
+
+Weil die entwickelten Verfahren nur die geometrischen Verh"altnisse ber"ucksichtigen
+k"onnen, wurde folgende Pr"amisse eingegangen:
+\begin{quote}
+Ein Textblock ist definiert als die maximale Menge von homogenen Zusammenhangsobjekten,
+homogen nach den beiden definierten Kriterien Buchstabenh"ohe und Strichdicke. 
+Ein Textblock ist
+charakterisiert durch die darin enthaltenen BCC--Objekte, das umschreibende Rechteck, die
+mittlere Objekth"ohe, die mittlere relative Strichst"arke, die Teilung (proportional oder
+nichtproportional) und durch die Position innerhalb der Lesefolge (siehe Kapitel
+\ref{Lesefolge})
+\end{quote}
+
+Zus"atzlich zur Lern-- und Teststichprobe stand eine Datenbank von der 
+Universit"at Washington mit fertig `gelabelten' Dokumenten zur Verf"ugung ({\em UWash\/}--Daten).
+Diese Dokumente hatten die Besonderheit, da"s die Labels logische Textbl"ocke enthalten
+Zudem wurden nur Bereiche mit
+Diagrammen und Tabellen als Nicht--Text beschriftet, jedoch nicht St"orungen durch Rauschen,
+Papierknicke etc. Die sich daraus ergebenden Probleme sind im n"achsten Abschnitt beschrieben.
+Um aussagekr"aftige Ergebnisse zu erhalten, ist es zu empfehlen, da"s die Person,
+die die Labels erzeugt, mit dem zugrundeliegenden Segmentierungsverfahren oder zumindest mit der
+Textblockdefinition vertraut ist.
+
+\subsection{M"oglichkeiten zur Bestimmung der Erkennungsleistung}
+
+Bei der Auswertung wird anhand von Referenztextbl"ocken und Textblockhypothesen
+eine Erkennungsrate berechnet, die als Ma"s f"ur die Leistungsf"ahigkeit der Verfahren dienen soll.
+In den vorangegangenen Erkennungsphasen wurden $n$ Textblockhypothesen erzeugt, die mit $k$
+vorliegenden Referenzen in "Ubereinstimmung gebracht werden m"ussen, wobei in der Regel
+$k \ne n$ ist. Dabei ist es aufwendig $k$ aus $n$ Textbl"ocken miteinander zu vergleichen.
+Desweiteren ist nicht eindeutig festgelegt, unter welchen Bedingungen zwei Textbl"ocke
+"ubereinstimmen (bei Identit"at oder wenn Textblockhypothesen innerhalb der Referenzbl"ocke liegen).
+Im Vergleich zu der Auswertung von Zeichenklassifikationsergebnissen handelt es sich hier
+folglich um ein viel schwierigeres Problem: Im letzteren Fall gilt es n"amlich nur zu
+"uberpr"ufen, ob die Zeichenhypothese mit der Referenz "ubereinstimmt.
+
+Erkennungsraten lassen sich "uber zwei Ans"atze definieren -- {\em Recall\/} und {\em Precision\/}:
+\begin{description}
+\item[Recall:]Die Erkennungsrate $ER_{R}$ ergibt sich aus der Anzahl der korrekt erkannten
+Textblockhypothesen $H_K$ bezogen auf die Gesamtanzahl der Hypothesen $H$:
+
+$$ER_{R} = \frac{H_K}{H}$$
+
+Bei dieser Definition ergibt sich folgendes Problem: Es k"onnen durchaus alle tat\-s"ach\-lich
+existierenden Textbl"ocke korrekt erkannt worden sein. Die durch die Vielzahl kleiner St"orungen
+zus"atzlich entstandenen vermeintlichen Textblockhypothesen bewirken aber, da"s die
+Erkennungsrate $ER_{R}$ sinkt. 
+Dies soll an einem Zahlenbeispiel verdeutlicht werden: Ein Dokument
+enthalte 10 Textbl"ocke. Die Segmentierung erkennt zus"atzlich zu den 10 richtigen Bl"ocken 
+($H_K=10$) noch 5 weitere, die nur St"orungen beinhalten ($H=15$). 
+Die Erkennungsrate $ER_{R}$ l"age in diesem Fall bei 67\%, obwohl alle Textbl"ocke erkannt wurden
+und das Gesamterkennungsergebnis auf Zeichenebene gut sein kann.
+
+\item[Precision:]Um diesen Nachteil zu vermeiden wird eine zweite Erkennungsrate $ER_{P}$ definiert. Hierbei
+erfolgt die Normierung der korrekt erkannten Textblockhypothesen $H_K$ auf die Anzahl der
+Referenzbl"ocke $R$, d.h.\ es flie"sen nur die richtigen Textblockhypothesen in die Erkennungsrate
+$ER_{P}$ ein:
+
+$$ER_{P} = \frac{H_K}{R}$$
+
+Angewandt auf obiges Beispiel ergibt sich eine Erkennungsrate $ER_{P} = 100$\%. 
+Neben diesem Wert sollte in diesem Fall zudem die Anzahl der Textblockhypothesen 
+angegeben werden, die zus"atzlich zu den korrekten erzeugt wurden:
+$$H_{Rest} = H - H_K$$
+\end{description}
+
+Um die Erkennungsergebnisse auch im Bezug auf nachfolgende Segmentierungsschritte und OCR--Analysen
+vergleichen zu k"onnen, werden neben Recall und Precision weitere Erkennungsraten definiert.
+Die Auswertung erfolgt nach folgenden Regeln:
+\begin{enumerate}
+  \item Bl"ocke, die sich innerhalb von gelabelten Nicht--Textgebieten befinden,
+  werden aus der Menge der hypothetischen Textbl"ocke $H$ entfernt. Daraus ergibt sich $H_T$.
+  
+  \item Die Erkennungsraten $ER_{R}$ und $ER_{P}$ ergeben sich, wie zuvor geschildert:
+  $ER_{R}$ aus der Anzahl der korrekt erkannten Textbl"ocke $H_K$, bezogen auf die 
+  Gesamtanzahl der Textblockhypothesen $H_T$ und $ER_{P}$ aus $H_K$ bezogen auf die Anzahl
+  der Referenztextbl"ocke $R_T$. Die zus"atzlich zu den korrekten Textblockhypothesen
+  erzeugten Bl"ocke lassen sich "uber $ H_{Rest} = H_T - H_K$ berechnen. Es handelt sich hierbei
+  um diejenigen Bl"ocke, die f"alschlicherweise zusammengefa"st, 
+  getrennt oder durch St"orungen erzeugt wurden.
+  
+  $$ER_{R} = \frac{H_K}{H_T}$$
+  $$ER_{P} = \frac{H_K}{R_T}\qquad\qquad H_{Rest} = H_T - H_K$$
+  
+  \item Da eine Trennung von homogenen Textbl"ocken in mehrere Teilbl"ocke die folgenden
+  Analyseschritte nicht negativ beeinflu"st, wird eine weitere Erkennungsrate $ER_{R}^{g}$
+  berechnet. In ihr werden zus"atzlich zu den korrekt erkannten Bl"ocken $H_K$ noch diejenigen
+  Textblockhypothesen ber"ucksichtigt, die sich innerhalb der Referenztextbl"ocke befinden 
+  ($H_{g}$). Hierbei wird nicht auf die Anzahl der Referenzbl"ocke $R_T$ normiert,
+  sondern auf die Anzahl der erkannten Textblockhypothesen $H_T$, da sich ansonsten 
+  Erkennungsraten von "uber 100\% ergeben w"urden.
+  
+  $$ER_{R}^{g} = \frac{H_K + H_{g}}{H_T}$$
+    
+  \item Um festzustellen wie stark Nicht--Textobjekte das Segmentierungsergebnis beeinflussen wird
+  eine dritte Rate $ER_{R}^{NTv}$ definiert: In ihr werden neben $H_K$ und 
+  $H_{g}$ noch Textblockhypothesen einbezogen, die sich mit Nicht--Textgebieten "uberlappen 
+  ($H_{NTv}$), d.h.\ bei denen Text-- und Nicht--Textobjekte verbunden wurden:
+  $$ER_{R}^{NTv} = \frac{H_K + H_{g} + H_{NTv}}{H_T}$$
+\end{enumerate}
+
+Zwei Arten von Segmentierungsfehlern sind in Anbetracht der weiteren 
+Segmentierungsschritte und der OCR--Analyse zu unterscheiden:
+\begin{enumerate}
+  \item {\bf Homogene Bl"ocke sind getrennt worden}; dies ist der Fall, wenn die Konsistenzpr"ufung
+  einen Block aufgrund zu stark einschr"ankender Homogenit"atsbedingungen getrennt hat, oder wenn
+  die Regeln f"ur das Zusammenfassen von Textbl"ocken keine Verbindung vorsahen. 
+  Es entstehen bei der OCR--Analyse keine Folgefehler aufgrund dieser fehlerhaften 
+  Segmentierung. Der einzige Nachteil dieses Fehlers besteht darin, da"s folgende Analyseschritte,
+  aufgrund kleinerer Textbl"ocke mit einer geringeren Anzahl von Elementen,
+  mit kleineren Statistiken auskommen m"ussen.
+  
+  \item {\bf Bl"ocke sind f"alschlicherweise zusammengefa"st worden}, so da"s
+  der resultierende Block
+    \begin{itemize}
+      \item nichthomogen bez"uglich Buchstabenh"ohe oder --st"arke ist,
+      \item Text-- und Nicht--Textgebiete beinhaltet oder
+      \item zwei nebeneinanderliegende Spalten zusammenfa"st.
+    \end{itemize}
+  Segmentierungsfehler durch Nichthomogenit"aten oder Nicht--Textobjekte innerhalb von
+  Textbl"ocken f"uhren meist zu einzelnen Fehlern bei der anschlie"senden Zeilen--, W"orter-- und
+  Zeichensegmentierung und der OCR--Analyse. Der Extremfall w"are die Verbindung von einzelnen
+  Textspalten, die das Gesamtergebnis allerdings nahezu unbrauchbar machen.
+\end{enumerate}
+
+Aus dieser Unterscheidung folgt, da"s Fehler aus dem ersten Fall toleriert werden k"onnen,
+aber Fehler aus dem zweiten Fall unbedingt vermieden werden m"ussen.
+
+Folglich ist nach dieser Definition ein {\em echter\/} Fehler nur dann aufgetreten, wenn eine
+Hypothese mehrere Referenzbl"ocke enth"alt. In diesem Fall kann der Block inhomogen sein
+oder mehrere Textspalten einschlie"sen. 
+An dieser Stelle wird das Problem bei der Auswertung des UWash Datensatzes deutlich:
+Diese Dokumente wurden in {\em logische\/} Bl"ocke eingeteilt, die Segmentierungsverfahren 
+fassen aber die gr"o"stm"ogliche Menge von homogenen Objekten zu einem Block zusammen. Liegen
+mehrere Referenzbl"ocke innerhalb einer Textblockhypothese, werden die Hypothesen
+als {\em falsch\/} bewertet (Die Auswertung schlie"st auf eine Nichthomogenit"at). 
+Grunds"atzlich sollten aus diesem Grund die Referenzbl"ocke nicht zu fein gelabelt werden.
+
+\subsection{Erkennunsergebnisse}
+Mit diesen Definitionen sind folgende Ergebnisse erziehlt worden:
+
+\subsubsection{Lernstichprobe}
+Die Lernstichprobe umfa"ste 47 Dokumente aus den oben genannten Klassen. Sie hatte das Ziel, 
+die Methoden zu testen und ggf.\ Fehler zu beseitigen bzw.\ auf Sonderf"alle hinzuweisen.
+
+\begin{center}\small
+\begin{tabular}{|l|r|r|r|r|r|r|r|}
+\hline
+Dokumentklasse   &   Anzahl & Mittlere& $ER_{P}$& $H_{Rest}$ & $ER_{R}$ & $ER_{R}^{g}$ & $ER_{R}^{NTv}$\\
+                 &          &Blockanzahl& &  & & & \\
+\hline
+Gesch"aftsbriefe           & 14 & 14 & 97.1 & 1.1 & 91.4 & 95.7 & 96.8\\
+Wissensch.\ Artikel       & 11 & 10 & 87.0 & 1.4 & 88.1 & 95.9 & 95.9\\
+Zeitschriften             & 13 & 16 & 96.3 & 1.5 & 94.0 & 96.6 & 97.5\\
+Tageszeitungen            & 11 & 25 & 92.5 & 3.8 & 84.2 & 95.6 & 96.6\\
+Steuerbescheide           &  8 & 30 & 85.4 & 5.6 & 85.5 & 92.8 & 96.2\\
+\hline
+Gesamt                    & 47 & 19 & 91.7 & 2.7 & 88.6 & 95.3 & 96.6\\
+\hline
+\end{tabular}\\[3mm]
+Ergebnisse der Lernstichprobe
+\end{center}
+
+\subsubsection{Teststichprobe}
+Die Teststichprobe umfa"ste 116 Dokumente mit den identischen Typenklassen der Lernstichprobe,
+wobei 50 Dokumente aus der UWash--Datenbank entnommen wurden (wissenschaftliche Artikel mit
+mehrern Spalten und variablem Layout).
+
+\begin{center}\small
+\begin{tabular}{|l|r|r|r|r|r|r|r|}
+\hline
+Dokumentklasse   &   Anzahl & Mittlere& $ER_{P}$& $H_{Rest}$ & $ER_{R}$ & $ER_{R}^{g}$ & $ER_{R}^{NTv}$\\
+                 &          &Blockanzahl& &  & & & \\
+\hline
+Gesch"aftsbriefe           & 20 & 11 & 93.8 & 1.5 & 88.4 & 96.3 & 99.2\\
+Wissensch.\ Artikel       & 20 & 15 & 91.5 & 2.8 & 83.5 & 95.3 & 97.3\\
+Zeitschriften             & 10 & 19 & 85.6 & 5.6 & 71.9 & 89.9 & 90.9\\
+Tageszeitungen            &  6 & 20 & 90.3 & 2.2 & 90.2 & 96.2 & 97.5\\
+Steuerbescheide           & 10 & 21 & 92.2 & 4.2 & 90.7 & 94.5 & 95.2\\
+UWash Dokumente           & 50 & 19 & 26.9 & 15.5& 21.5 & 45.9 & 48.3\\
+\hline
+Gesamt                    &116 & 18 & 80.1& 5.3& 72.7 & 86.3 & 88.1\\
+\hline
+Gesamt ohne UWash         & 66 & 17 & 90.7& 3.3& 82.9 & 94.4 & 96.0\\
+\hline
+\end{tabular}\\[3mm]
+Ergebnisse der Teststichprobe
+\end{center}
+
+\subsubsection{Laufzeitmessung} \label{Speed}
+Die Algorithmen wurden an vielen Stellen auf Geschwindigkeit optimiert (z.B.\ Zusammenfassen
+von Histogrammklassen, Unterabtastung, Minimum Spanning Tree, etc.). Die Versuche wurden auf zwei
+verschiedenen Rechnern durchgef"uhrt: Auf einer  NeXT--Workstation mit Motorola 68040 25MHz
+Prozessor und auf einer leistungsf"ahigeren Hewlett Packard 712/80 Maschine mit einem 
+HP-PA RISC 80MHz Prozessor.
+
+\begin{center}\small
+\begin{tabular}{|p{3cm}|c|c|c|c|c|c|c|c|}
+\hline
+Sekunden &\multicolumn{2}{p{25mm}|}{Gesch"aftsbrief}&\multicolumn{2}{p{25mm}|}{Wissenschaft\-licher Artikel}&
+    \multicolumn{2}{p{25mm}|}{Zeitschrift}&\multicolumn{2}{p{25mm}|}{Tageszeitung}\\
+    & 68k & HP-PA & 68k & HP-PA & 68k & HP-PA & 68k & HP-PA\\
+\hline
+BCC--Anzahl &\multicolumn{2}{c|}{928}&\multicolumn{2}{c|}{2515}&
+\multicolumn{2}{c|}{7057}&\multicolumn{2}{c|}{9924}\\
+\hline
+Filterung & 0.09 & 0.03 & 0.6 & 0.05 & 6.0 & 1.5 & 5.3 & 1.4\\
+\hline
+XY--Cut   & 0.9 & 0.3 & 1.7 & 0.5 & 1.6 & 0.5 & 1.8 & 1.1\\
+\hline
+Smearing und& 3.2 & 0.7 & 5.5 & 1.2 & 9.0 & 2.4 & 10.8 & 5.3\\
+Blockzuordnung& (11.3)& (2.4) & (15.3) & (3.5) & (25.5) & (6.0) & (30.0) & (8.2) \\
+\hline
+Nachbearbeitung & 4.5 & 0.7 & 5.4 & 1.2 & 12.0 & 3.2 & 12.2 & 4.5\\
+\hline
+Sortierung & 0.03 & $<$ 0.01&0.02 & $<$ 0.01& 0.03 & $<$ 0.01& 0.03 & $<$ 0.01\\
+\hline\hline
+Summe & 8.7 &1.7& 13.2 & 3.0& 28.6 & 7.6& 30.1 & 12.3\\
+ & (16.8) & (3.4) & (23.0) & (5.3) & (45.1) & (11.2) & (49.3) & (15.2)\\
+\hline
+\end{tabular}\\[3mm]
+Beispielhafte Ausf"uhrungszeiten in Sekunden\\(Werte in Klammern gelten ohne Unterabtastung)
+\end{center}
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+\subsection{Diskussion der Ergebnisse}\label{ErgDiskuss}
+
+Die in dieser Arbeit vorgestellten Methoden zur Segmentierung eines Dokumentbildes in
+homogene Textbl"ocke wurden an 163 Dokumenten mit verschiedenartigem Layout
+untersucht. Die Verfahren zeigen gute bis sehr gute Ergebnisse bei den betrachteten
+Dokumentklassen. Es wurde eine Erkennungsrate von bis zu 96\% ($ER_{R}^{g}$) erreicht. 
+Zwischen der bekannten Lernstichprobe und der unbekannten Teststichprobe traten keine
+nennenswerten Verschlechterungen in den Erkennungsraten auf. Dies l"a"st auf eine
+gute Adaption der Parameter schlie"sen.
+
+Die Ausrei"ser bei den Dokumenten aus der UWash Datenbank ($ER_{R}^{g}$ = 45.9\%) 
+sind durch zwei Effekte entstanden:
+Bei den UWash Dokumenten wurde jedem logischen Absatz ein eigener Textblock zugeordnet. Dies
+widerspricht der oben genannten Definition von der maximalen Gr"o"se eines Blocks.
+Kamen mehrere Referenzbl"ocke innerhalb einer Textblockhypothese zum liegen, wurden die Hypothesen
+als {\em falsch\/} bewertet (Die Auswertung schlie"st auf eine Nichthomogenit"at). Daraus
+ergibt sich eine $ER_{P}$ von 26.9\% und eine sehr hohe Anzahl von
+nicht korrekten Textblockhypothesen (im Durchschnitt $H_{Rest} = 15.5$). Diese geringe
+Erkennungsrate ist zudem durch die fehlende Labelung von St"orungen (schlechte Vorlagenqualit"at)
+als Nicht--Textgebiete zu begr"unden.
+
+Vergleicht man die Werte von $ER_{R}$ und $ER_{R}^{g}$  ist daraus ersichtlich, da"s
+die Verfahren die Textbl"ocke immer feiner segmentieren als es die Referenztextbl"ocke
+vorschreiben. Meist trennen die Konsistenzpr"ufungen st"arker (objektiver) oder es wird weniger
+zusammengefa"st als es der Bearbeiter bei der Erstellung der Referenzdaten
+vermutet.
+
+\Bild{TrenntZuStark}{14.5}{Konsistenzpr"ufung trennt zu stark}
+\newpage
+Dies ist der Fall, wenn (s.\ \BildRef{TrenntZuStark})
+\begin{itemize}
+  \item nur ein Teil der Textzeile eine h"ohere Strichdicke aufweist wie der Rest (1), 
+    
+  \item die Nichthomogenit"aten f"ur den (menschlichen) Betrachter kaum sichtbar sind (2), 
+  
+  \item zwischen zwei Textzeilen die mittlere Zeichenh"ohe variiert,
+  z.B.\ wenn innerhalb einer Zeile viele Gro"sbuchstaben, Zahlen oder Klammern auftauchen (3),
+  
+  \item der Abstand der Textbl"ocke (knapp) "uber der Schwelle liegt (4)
+
+  \item Unterscheidet sich die Blockkontur zu sehr von dem umschreibenden Rechteck, so kann
+   beim Zusammenfassen von homogenen Bl"ocken folgender Fehler auftreten 
+   (s.\ \BildRef{ZusammenfassenProblem}): Man betrachte die Bl"ocke TB1, TB3 und TB4. 
+   Der minimale Spannbaum verbindet nur TB3 mit TB1 und TB4 mit TB1 aufgrund der
+   Abstandsverh"altnisse der umschreibenden Blockrechtecke mit einer Kante (Abstand 
+   zwischen TB1--TB3 und TB1--TB4 ist jeweils null, der Abstand TB3--TB4 dagegen gr"o"ser null).
+   Obwohl TB3 und TB4 zueinander homogen sind und sich in
+   ausreichender N"ahe zueinander befinden, werden sie nicht zusammengefa"st.
+   Diese Problem tritt speziell bei komplexen Zeitschriftenlayouts auf 
+   (s.\ \BildRef{ZusammenfassenProblemDemo}). Aus diesem Grund l"a"st sich
+   auch die um etwa 20\% niederere Erkennungsrate $ER_{R}$ der Zeitschriften im Vergleich zu den
+   weniger komplexen Layouts der sonstigen Klassen erkl"aren.
+   
+   \Bild{ZusammenfassenProblem}{8}{Das Zusammenfassen bereitet Probleme, wenn sich die
+   umschreibenen Rechtecke der Blockkonturen "uberlappen}
+   \Bild{ZusammenfassenProblemDemo}{8}{Aufgrund "uberlappender Bounding--Boxes verbindet keine Kante
+   des minimalen Spannbaumes die homogenen Zeilen in der Dokumentmitte}
+\end{itemize}
+
+Eine Trennung von homogenen Textbl"ocken beeinflu"st die nachfolgenden Dokumentanalyseschritte,
+mit Ausname der aufgrund weniger Objekte bedingten Statistikeffekte, nicht. 
+Aus diesem Grund gibt der Wert $ER_{R}^{g}$ mehr Aufschlu"s "uber die
+Leistungsf"ahigkeit der Segmentierungsverfahren innerhalb des Gesamtsystems.
+
+Im Gegensatz dazu f"uhrt eine Zusammenfassung von nichthomogenen Bl"ocken in der Regel
+zu Fehlern in den nachfolgenden Erkennungsschritten.
+Das Spektrum reicht hierbei von einzelnen Zeichenerkennungsfehlern bis zu
+unbrauchbaren Ergebnissen bei verbundenen Textspalten.
+
+  In vier F"allen wurden bei der Segmentierung von Textbl"ocken in Tageszeitungen
+  innerhalb der Teststichprobe 
+  angrenzende Spalten verbunden. Bei genauer Analyse der Ursachen, stellte sich heraus, da"s diese
+  Dokumente jeweils quer digitalisiert wurden. Wie schon in Kapitel \ref{Filterung}
+  (Filter-Parametrierung) erw"ahnt, mu"s bei Dokumenten die nicht im DIN--A4--Hochformat 
+  vorliegen die Umrechnung von Punkt in Pixel angepa"st werden. Nach der
+  Adaption der Parameter trat eine Spaltenverbindung nur noch in einem
+  Fall auf (s.\ \BildRef{SpaltenVerbunden}): Eine Grafik zwischen den zwei Spalten wirkte beim
+  Smearing als Br"ucke. 
+
+  \Bild{SpaltenVerbunden}{6.5}{Einziger Fall von verbundenen Spalten}
+\newpage
+An dieser Stelle soll, in Bezug auf die bestehenden Probleme, diskutiert werden, inwieweit die
+gestellten Anforderungen an die Verfahren aus Kapitel \ref{Anforderungen} Seite
+\pageref{Anforderungen} erf"ullt wurden:
+
+\begin{itemize}
+  \item Die Verfahren zeigen konstant gute Ergebnisse auf den verschiedenen Dokumentklassen, wobei
+  die Klasse mit sehr komplexem Layout und vielen Nicht--Textelementen (Zeitschriften)
+  erwartungsgem"a"s 5\% unter der durchschnittlichen Erkennungsrate liegt.
+  
+  \item Eine Vielzahl von Parametern sind dem Benutzer zug"anglich und vor dem Beginn der Analyse
+  ver"anderbar (n"aheres siehe in den Parametrierungsabschnitten von Kapitel \ref{BestimmungZones}
+  und zusammenfassend im Anhang \ref{ParameterPanel}).
+
+  \item Alle Verfahren werden grunds"atzlich automatisch parametriert. Die Ausnahme bilden
+  Dokumente, die nicht im DIN--A4--Hochformat digitalisiert wurden. In diesem Fall m"ussen die
+  entsprechenden Parameter angepa"st werden.
+  
+  \item Dokumente mit mehrspaltigem Layout werden ebenso korrekt segmentiert wie Layouts mit 
+  nicht rechteckigem Konturenverlauf. Hierbei bereiten "uberlappende, umschreibende Rechtecke der
+  Blockkonturen beim Zusammenfassen teilweise Probleme (s.u.).
+  
+  \item S"amtliche Segmentierungsverfahren wurden implementiert und in die bestehende
+  Experimentierumgebung integriert.
+
+\end{itemize}
+\newpage
+Im Folgenden werden weitere aufgetretene Probleme diskutiert:
+\begin{itemize}
+  \item  Das gr"o"ste Problem stellen die vorhandenen Nicht--Textobjekte dar.
+  Dies sind Unterschriften, Grafiken und sonstige handschriftliche
+  Eintragungen in Gesch"aftsbriefen, sowie Tabellen und Halbtonbilder in Zeitschriften oder
+  Tageszeitungen. Hinzu kommen die fast unvermeidbaren St"orungen durch schlechte, oft kopierte
+  Vorlagen. Die Anwendung der Homogenit"atskriterien bewirkt auf diesen Gebieten keine
+  sinnvollen Ergebnisse. Da diese Nicht--Textobjekte selten als solche erkannt und gel"oscht 
+  werden k"onnen, es sei denn, sie "uber-- oder unterschreiten die Filterschwelle, werden sie von den
+  Verfahren wie Textobjekte behandelt. Dies bedeutet, da"s sie sich zusammen mit
+  Textobjekten oder separat innerhalb von Textbl"ocken befinden k"onnen 
+  (s.\ \BildRef{SmearingGrafik}). Ein Vergleich zwischen $ER_{R}^{g}$ und $ER_{R}^{NTv}$ zeigt, 
+  da"s bei einer vorgschaltetem Text--Grafik--Unterscheidung die Erkennungsraten im Einzelfall
+  (Steuerbescheide) um bis zu 5\% erh"oht werden k"onnten. 
+   
+    \Bild{SmearingGrafik}{11}{Text-- und Nicht--(Maschinengeschriebene)--Textobjekte innerhalb eines Blocks}
+  \item Schwierigkeiten bereitete die Aufstellung der Gewichtungsfunktion f"ur den maximalen 
+  relativen Fehler (s.\ \BildRef{ErrWeight} auf Seite \pageref{eps:ErrWeight}). Ziel war es,
+  die Homogenit"atskriterien bei einer kleinen Statistik, d.h.\ bei wenig Objekten in einer Zeile,
+  weniger streng anzuwenden. Dennoch m"ussen auch kurze nichthomogene Zeilen von einem
+  Block abgetrennt werden k"onnen. Diese widerspr"uchlichen Anforderungen an die
+  Gewichtungsfunktion k"onnen im Einzelfall zu Fehlern f"uhren (s.\ \BildRef{ProblemGewichtFkt}).
+  
+  \Bild{ProblemGewichtFkt}{9}{Probleme bei wenigen Objekten: kurze Zeile abgetrennt (oben), nichthomogene kurze "Uberschrift zusammengefa"st (unten)}
+
+  \item Bei der Untersuchung einer Textzeile nach einem beinhalteten Initial
+  wurde von der Annahme ausgegangen, da"s sich ein Initial stets am
+  Anfang, also in der oberen linken Ecke, eines Blocks befindet. Aus diesem Grund werden
+  Initialien, welche sich innerhalb eines hypothetischen Blocks befinden 
+  (s.\ \BildRef{InitialImBlock}) nicht als solche klassifiziert und deshalb auch nicht extrahiert.
+  
+  \Bild{InitialImBlock}{5}{Nicht erkanntes Initial in einem Block}
+  
+   \item Ein m"oglicher Fehler, der aber in den Trainings-- und Testdatens"atzen nicht auftrat, 
+   w"are eine nicht zu verhindernde falsche Zusammenfassung von Bl"ocken durch die in Kapitel
+   \ref{Zusammenfassen} aufgestellten Regeln. Sie verhindern nicht, da"s "uberlappende Textbl"ocke,
+   bei denen es sich um verschiedene Spalten handeln k"onnte, zusammengefa"st werden.
+   Um sich dies zu verdeutlichen betrachte man die Textbl"ocke TB1 und TB2 aus 
+   Abbildung \ref{eps:ZusammenfassenProblem}.
+     
+  \item Wird bei Tabellen, die in der Dokumenklasse der Steuerbescheide geh"auft 
+  auftreten, f"ur jede Tabellenspalte oder Tabellenzeile ein eigener Textblock gew"unscht, so
+  mu"s die interne Grafikstruktur eines BCC--Objekts bei der Segmentierung ber"ucksichtigt werden.
+  Die derzeitige Linienklassifikation "uber das H"ohen--Breiten--Verh"altnis der umschreibenden
+  Rechtecke ber"ucksichtigt diese nicht, deshalb ist es m"oglich, da"s benachbarte
+  Tabellenzeilen in einem Textblock zusammengefa"st werden (s.\ \BildRef{SmearingTabelle}). 
+  Ein m"oglicher Ansatz ist im Ausblick \KapRef{ZoningAusblick} beschrieben.
+  
+  \Bild{SmearingTabelle}{6}{Benachbarte Tabellenzeilen wurden zu einem Textblock zusammengefa"st}
+
+  \item Linien, die bei der Digitalisierung zerfallen, werden in der Reglel nur teilweise 
+  als Linie erkannt und aus dem Bin"arbild gel"oscht. 
+  Bleiben Liniensegmente oder sonstige St"orungen zwischen Textspalten zur"uck, 
+  k"onnen sich durch das Smearing Spalten Verbinden (s.\ auch \BildRef{HorizKleb} Seite 
+  \pageref{eps:HorizKleb}).
+  Ein vertikaler XY--Cut mit vorausgegangenem Filter (wie in \KapRef{HorKleb} beschrieben) 
+  wird diese fehlerhaft segmentierten Bl"ocke meist wieder aufspalten. Problematisch ist
+  hierbei die Wahl der Filterschwelle. Eine optimale L"osung w"are die Verallgemeinerung der
+  Linienklassifikation auf zerfallene und punktierte Linien.
+
+\end{itemize}
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+\subsection{Verbesserungsm"oglichkeiten -- Ausblick}\label{ZoningAusblick}
+Die in dieser Arbeit beschriebenen Methoden liefern Hypothesen f"ur homogene Textbl"ocke. Sie
+bilden die Basis f"ur eine zuverl"assige Segmentierung in Zeilen, W"orter und Buchstaben. 
+
+Aufgrund der geschilderten Probleme wurden folgende Verbesserungsm"oglichkeiten identifiziert:
+\begin{itemize}
+\item
+Ein wichtiger Schritt um die Erkennungsleistung und die Robustheit sp"urbar zu erh"ohen, w"are
+die Einf"ugung eines {\em Text--Grafik--Unterscheidungsmoduls\/}. Die Anforderung an ein solches
+Modul w"are eine Filterung von Nicht--Textobjekten (St"orungen, Diagrammen und Photos).
+
+\item Die Erkennungrate lie"se sich -- speziell bei komplexem Layout von Zeitschriften -- durch die
+Ber"ucksichtigung der Blockkontur -- anstelle der umschreibeneden Rechtecke -- beim Zusammenfassen
+steigern. Dazu w"are jedoch ein erheblicher Mehraufwand notwendig (z.B.\ f"ur die Berechnung
+des Abstandes zweier Konturen).
+
+\item
+Um die Erkennung von {\em Linienelementen\/} zu verbessern, m"u"ste die Linienklassifikation, 
+anstelle auf den umschreibenden Rechtecken, direkt auf der BCC--Kontur aufsetzen.
+Es w"are folgender Ablauf denkbar:
+Ausgehend von den Zusammenhangsgebieten wird ein Skelettbild erzeugt, indem von
+au"sen und innen die schwarzen Zusammenhangsgebiete -- bis auf eine Pixelreihe --
+schichtweise abgetragen werden. Diese einzelnen Punkte
+bilden die St"utzstellen f"ur Polygone, wobei die gro"se Anzahl von St"utzstellen
+durch einen geeigneten Approximationsalgorithmus (z.B.\ \cite{Wall83})
+reduziert werden sollte. Eine geeignete Definition f"ur ein Ma"s, das die Kr"ummung
+eines Polygons wiedergibt, w"are z.B.\ die Summe der Winkel angrenzender Polygone, normiert
+auf die L"ange des Polygonzuges. Dadurch k"onnten Liniensegmente beliebigen Winkels, sowie
+Linien innerhalb von Tabellen extrahiert werden.
+
+Zus"atzlich k"onnte das Modul um eine Erkennung von zerfallenen ober punktierten Linien 
+erweitert werden. Hierbei sei auf die Hough--Transformation verwiesen \cite{Illingworth88}.
+
+\item
+Die Konsistenzpr"ufung k"onnte zus"atzlich innerhalb jeder einzelnen Textzeile angewandt werden.
+Dadurch w"are es m"oglich nichthomogenit"aten, beispielsweise von W"ortern, auch innerhalb einer
+Textzeile, zu erkennen.
+
+\Bild{NichtHomo}{10}{Nichthomogenit"at innerhalb einer Textzeile}
+
+\item
+Grunds"atzlich k"onnte die nachfolgende Zeilen--, Wort-- und Buchstabensegmentierung
+ihre Vorteile aus den Textblock--Ergebnissen ziehen: z.B.\ m"u"sten f"ur diese Segmentierungsschritte
+Werte wie Zeilenabstand, Zeichengr"o"se und Teilung nicht erneut berechnen, sondern k"onnten
+auf die schon berechneten Informationen zur"uckgreifen.
+Auch eine Erweiterung der OCR--Analyse ist denkbar:
+Zur Zeit wird bei der Zeichenklassifikation ein universeller Klassifikator eingesetzt. Mit ihm
+k"onnen proportionale und nichtproportionale Schriftarten wie Times und Courier erkannt werden.
+Dieser allgemeine Ansatz ist aber innerhalb von Textbl"ocken nicht notwendig, da diese im
+Idealfall nur einen Schrifttyp enthalten. Dadurch k"onnte nach einer Bestimmung des Schrifttyps
+auf einen spezialisierten Klassifikator zur"uckgegriffen werden. Das Ergebnis w"are eine erh"ohte
+OCR--Ge\-schwindig\-keit bei geringeren Fehlerraten.
+
+%\item
+%Zun"achst erscheint eine Optimierung der Ergebnisse durch Iteration sinnvoll:
+%Die Dokumentsegmentierung und OCR--Analyse wird nach einer Variation der Parameter solange 
+%durchlaufen, bis die Fehlerrate ein Minimum erreicht hat. 
+%Dieses Verfahren wird an zwei Punkten scheitern: 
+%Erstens k"onnen ohne Referenzdaten, die im realen Fall nicht vorliegen, die %?? eines 
+%Ergebnisse (z.B.\ bzgl.\ ihrer Fehlerrate) nicht bewertet werden. 
+%Zweites w"are ein intelligentes Verfahren zur Parametervariation nicht trivial,
+%ganz abgesehen von der erforderlichen Rechenleistung.
+\end{itemize}
+
+Auch bei einer Realisierung aller dieser Verbesserungsm"oglichkeiten wird jedoch die 
+Erkennungrate auf der Teststichprobe immer kleiner sein als auf der Lehrstichprobe. 
+Die Ursache liegt darin, da"s w"ahrend des Trainings nie alle Probleme auftreten. 
+Dies f"uhrt dazu, da"s sich die Verfahren 
+innerhalb der Teststichprobe an unbekannten Sonderf"allen fehlerhalft verhalten.
+Es gilt bei jeder Mustererkennungsaufgabe zu bedenken, da"s die Ergebnisse Hypothesen 
+mit einer gewissen Unsicherheit darstellen. 
+Erweiterungen und Verbesserungen k"onnen dies prinzipiell nicht entscheidend "andern. 
+
+Der Aufwand bei der Erstellung und Optimierung der Segmentierungsverfahren mu"s dabei immer in
+Relation zu dem Ziel der Dokumentanalyse gestellt werden. Wird nur eine 
+Klassifikation des Textes zu einem Thema gefordert, kann es gen"ugen, einzelne W"orter 
+mit der OCR--Analyse zu erkennen. 
+Fehler durch st"orende Grafikeinfl"usse sind bei dieser Anwendung unproblematisch.
+Soll dagegen das Dokument in eine Bibliotheksdatenbank aufgenommen werden,
+mu"s das Ergebnis absolut fehlerfrei sein. Nur dann ist zum Beispiel eine Volltextsuche
+realisierbar.
+\newpage
+\subsection*{Beispiele}
+
+\Bild{HomoCheckErg}{10}{Ergebnisse der Konsistenzpr"ufung: Trennung bei unterschiedlicher Schriftgr"o"se (oben), bei einem Initial (Mitte), bei unterschiedlicher
+Schriftst"arke (links) und auch bei "uberlappenden Textbl"ocken (rechts)}
+
+\Bild{ZoningErg0}{16}{Ergebnis der Textblocksegmentierung bei einer Tageszeitung}
+
+\Bild{ZoningErg1}{14}{Ergebnisse der Textblocksegmentierung: Gesch"aftsbrief (oben),
+wissenschaftlicher Artikel (unten)}
+
+\Bild{ZoningErg2}{10}{Segmentierungsergebnisse: Dokument mit Nicht-Manhattan Layout (oben), Zeitschrift mit Bl"ocken von beliebigem Konturverlauf (unten)}
+
+\Bild{UlrichsProblemGeloest}{13}{Verbesserte Zeilensegmentierung durch vorgeschaltete
+Textblocksegmentierung (zum Vergleich siehe \protect\BildRef{UlrichsProbleme} Seite \protect\pageref{eps:UlrichsProbleme})}
+

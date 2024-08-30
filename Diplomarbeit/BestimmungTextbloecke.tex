@@ -1,0 +1,836 @@
+\chapter{Bestimmung von Textbl"ocken}\label{BestimmungZones}
+
+\input{StandDerTechnik}
+
+\section{Konzept}
+
+Die in Kapitel \ref{GrundlegendeTechniken} und \ref{LayoutanalyseMethoden}
+vorgestellten Methoden bilden die Grundlage f"ur das hier beschriebene Vorgehen.
+Die Layoutanalyse ausschlie"slich auf eines dieser Verfahren zu st"utzen, erscheint, aus den oben
+genannten Gr"unden, nicht sinnvoll. Zweckm"a"siger ist es, diese Verfahren zu kombinieren, um somit von ihren jeweiligen Vorteilen profitieren zu k"onnen. Keine der in der
+Literatur gefundenen Methoden "uberpr"uft die Homogenit"at innerhalb der gefundenen hypothetischen
+Textbl"ocke. Es wird stets davon ausgegangen, da"s die vorangegangene Segmentierung
+  {\em richtige\/} Ergebnisse liefert. Das liegt unter anderem an der Aufgabenstellung und
+den fehlenden M"oglichkeiten zur Berechnung von geeigneten Homogenit"atskriterien.
+
+Grunds"atzlich l"a"st sich das Verfahren in vier Abschnitte gliedern (\BildRef{KonzeptPhasen}):
+
+\begin{enumerate}
+  \item Das Bin"arbild und die durch die Zusammenhangsanalyse gewonnenen BCC--Objekte bilden
+        die Eingangsdaten. Das Dokument sollte im Winkel korrigiert und Grafik\-objekte
+        sollten bereits entfernt worden sein. Ein solches Text--Grafik--Unter\-scheid\-ungs\-modul ist
+        in der jetzigen Ausbaustufe des Projekts noch nicht beinhaltet; es mu"s deshalb ein
+        (einfacher) Filter implementiert werden. Dieser Filter bewirkt, da"s sehr kleine und sehr
+        gro"se Objekte, bei denen davon ausgegangen werden kann, da"s es sich nicht um Text handelt,
+        aus der Menge der Zusammenhangsobjekte aussortiert werden. Zus"atzlich
+        sollten Linien und Textrahmen, die als Layoutbegrenzer dienen, extrahiert und f"ur die sp"atere
+        Segmentierung gespeichert werden.
+
+  \item Der zweite Schritt besch"aftigt sich mit dem Finden von Textbl"ocken und der Berechnung der
+        dazu ben"otigten Parameter. Das in Kapitel \ref{BottomUp} Abschnitt \ref{Smearing} vorgestellte Smearing eignet sich
+        sehr gut, angrenzende Schwarzgebiete (Buchstaben) zu gr"o"seren Bl"ocken zu verbinden.
+        Das Laufzeitproblem, das dieses morphologische Verfahren mit sich bringt, l"a"st sich
+        durch eine drastische Reduzierung des Datenvolumens (s.\ \KapRef{BottomUp} Abschnitt \ref{Subsampling}) beseitigen.
+        Damit die Smearing Parameter m"oglichst lokal berechnet werden k"onnen, wird das Dokument zuvor
+        durch XY--Cuts (s.\ \KapRef{XYCutTheroie}) in seine grobe (rechtwinklige) Struktur zerlegt.
+        Innerhalb dieser Gebiete werden die Parameter berechnet und das Smearing ausgef"uhrt.
+        Eine Zusammenhangsanalyse auf dem verschmierten Bin"arbild ergibt die Kontur des
+        hypothetischen Textblocks. Alle BCC--Objekte innerhalb dieser Kontur
+        werden zusammengefa"st und bilden den hypothetischen Textblock.
+
+  \item Im vorangegangenen Schritt wurden die BCC--Objekte aufgrund ihrer geometrischen N"ahe
+        zusammengefa"st, ohne dabei die Eigenschaften der Objekte zu betrachten.
+        Da man nie auf Anhieb optimale Ergebnisse f"ur alle m"oglichen Dokumentarten erreichen kann,
+        mu"s an dieser Stelle eine Konsistenzpr"ufung der hypothetischen Textbl"ocke
+        folgen. Entsprechen die Bl"ocke nicht den Anforderungen werden sie
+        aufgespalten:
+        \begin{itemize}
+          \item Hypothetischer Block ist nicht homogen bez"uglich der Buchstabengr"o"se und --st"arke
+          \item Textblock wird durch ein Liniensegment durchtrennt
+          \item Nebeneinanderliegende Spalten sind verbunden
+        \end{itemize}
+
+  \item Eine zweite Fehlerquelle nach dem zweiten Schritt bilden Bl"ocke, die zwar homogen und benachbart
+        sind, aber dennoch nicht durch das Smearing
+        verbunden wurden. Eine Zusammenfassung dieser Bl"ocke durch Relaxation unter Ber"ucksichtigung
+        der Homogenit"atskriterien bildet den Schlu"s der Segmentierung.
+\end{enumerate}
+
+\Bild{KonzeptPhasen}{3.4}{Phasen der Textblocksegmentierung}
+\clearpage
+Anhand von Beispielen ist in Abbildung \ref{eps:AblaufAnBeispielen} dargestellt,
+wie die Ergebnisse der einzelnen Schritte aussehen k"onnten.
+\Bild{AblaufAnBeispielen}{10}{Schritte der Textblocksegmentierung an Beispielen}
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+\section{Einfache Filterung} \label{Filterung}
+
+Bevor die eigentliche Segmentierung durchgef"uhrt werden kann, sollte sichergestellt sein, da"s
+sich auf dem Dokument nur noch Textobjekte befinden. Andere Elemente, wie Diagramme,
+Bilder und durch schlechte Vorlagenqualit"at bedingte St"orungen sind in der sp"ateren Texterkennung
+nicht sinnvoll zu verwerten und sollten deshalb so fr"uh wie m"oglich aus dem Dokument
+entfernt werden. Um die BCC--Objekte zu klassifizieren, wird hier ein Gr"o"senfilter
+angewandt. Dieser Filter l"a"st alle Objekte passieren, die innerhalb des Bereichs
+$[w_{min}, w_{max}]$ f"ur die Breite\footnote{ist von H"ohe und Breite in Bezug auf
+  Zusammenhangsobjekte die Rede, so ist damit die H"ohe und Breite des umschreibenden
+  Rechtecks ({\em Bounding--Box\/}) gemeint} und $[h_{min}, h_{max}]$ f"ur die H"ohe liegen.
+An dieser Stelle mu"s der Bereich sinnvoll festgelegt werden. Es sollten so wenig
+Textelemente wie m"oglich entfernt werden, andererseits sollten Schmutzpartikel (Rauschen) und
+gro"se Grafikteile eliminiert werden. Experimente mit verschiedenen Parametern haben gezeigt, da"s
+Schriftgr"o"sen unter 6pt ({\em Punkt\/} ist die kleinste Ma"seinheit im typographischen System
+1m = 2660pt, 1pt = 0.376mm) -- entspricht etwa 16 Pixel bei 300dpi -- selten vorkommen.
+Um aber nicht kleine Bestandteile wie Satzzeichen, i--Punkte,
+Umlautzeichen ("a, "A, "u, "U, "o, "O) und Akzente (\'{e}, \u{o}, \.o, etc.), bei Schriftgr"o"sen
+zwischen 6pt -- 10pt zu l"oschen, wurde die untere Grenze f"ur die minimale H"ohe $h_{min}$ und
+Breite $w_{min}$ auf 5 Pixel festgelegt.
+
+Die Wahl der oberen Schranke $h_{max}$ und $w_{max}$ ist dagegen unproblematisch.
+Da sehr gro"se "Uberschriften
+selten h"oher als 120pt (etwa 350 Pixel bei 300dpi) sind -- Boulevard--Presse ausgeschlossen --
+ist es sinnvoll diese Grenze zu w"ahlen.
+In Zeitschriften und Tages\-zeit\-ungen werden Rahmen um die
+inhaltlich zusammenh"angenden Texte gezogen. Deshalb werden alle umschreibenden
+Rechtecke, die die obere Schranke "uberschreiten, als sp"atere Segmentierungshilfe gespeichert.
+
+\Bild{Filter}{13}{Klassifikation und Filterung der BCC--Objekte}
+
+Gleichzeitig erfolgt eine Klassifikation in Liniensegmente, die
+analog den Textrahmen f"ur die weitere Bearbeitung als Hilfe dienen. Die Klassifikation erfolgt
+nach dem H"ohen-- und Breitenverh"altnis des umschreibenden Rechtecks des BCC--Objekts.
+Zus"atzlich wird verlangt, da"s die hypothetischen Linien
+frei von wei"sen Einschl"ussen sind. Hierbei ist es nur m"oglich, horizontale und vertikale Linien
+zuverl"assig zu erkennen. Zerfallene oder punktierte Linien, sowie Linien, deren Winkel nicht um
+$0^\circ$ bzw.\ $90^\circ$ liegen, werden nicht erkannt und wirken beim folgenden
+Smearing st"orend.
+
+Die als zu klein, zu gro"s oder als Linien eingestuften Objekte werden aus der Menge der
+BCC--Objekte und innerhalb des Bin"arbildes gel"oscht und nicht weiter betrachtet.
+Zusammenfassend ist die Filterung in \BildRef{Filter} dargestellt.
+
+Diese Klassifikation ist sehr einfach gehalten und sollte zu einem sp"ateren Zeitpunkt durch ein
+Text--Grafik--Separationsmodul ersetzt werden.
+
+  {\bf Parametrierung:}
+
+Aufgrund der h"oheren Anschaulichkeit sind die Gr"o"senangaben bei der Parametereinstellung
+nicht in Punkten,
+sondern in Pixeln anzugeben (s.\ \BildRef{ParameterPanelFilter}).
+Die Standardparameter bei 300dpi sind 5 Pixel
+f"ur kleine und etwa 350 Pixel f"ur gro"se Objekte (jeweils f"ur H"ohe und Breite).
+Bei der Berechnung dieser Werte wird von einer minimalen Buchstabenh"ohe (Fontsize) von 6pt
+ausgegangen. Die Umrechnung von Punkten in Pixel erfolgt "uber die Sch"atzung der
+Scannaufl"osung, wobei angenommen wird, da"s das Dokument im DIN--A4--Hochformat vorliegt
+und entsprechend viele Pixelzeilen besitzt. Bei Dokumenten, die verkleinert oder
+quer eingelesen wurden, mu"s die Umrechnung von Punkt in Pixel angepa"st werden.
+
+%$$S[\mbox{dpi}] = \frac{S \mbox{Pixel}}{1 \mbox{in}} = \frac{S \mbox{Pixel}}{72.27 \mbox{pt}}$$
+%$$1\mbox{pt} = \frac{S}{72.27}\mbox{pt}$$
+
+\Bild{ParameterPanelFilter}{11}{Parameter f"ur die Filterung}
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+\section{Textbl"ocke erzeugen}
+Der zweite Analyseschritt soll erreichen, da"s m"oglichst viele Objekte mit der
+Smearing--Methode zusammengefa"st werden:
+\begin{itemize}
+  \item Um die Smearing--Parameter lokal zu berechnen, wird das Dokument mittels XY--Cuts in
+        seine grobe Struktur zerlegt. Die gefundenen rechtwinkligen Gebiete seien $T_{xy}$.
+
+  \item Die hohe Datenmenge des Bin"arbildes wird durch Unterabtastung um den Faktor 64
+        reduziert. Dadurch wird die Laufzeit nachfolgender morphologischer Operationen
+        erheblich verkleinert.
+
+  \item Innerhalb von $T_{xy}$ wird nun jeweils das Smearing--Window "uber den
+        Zeilenabstand direkt aus den BCC--Objekten berechnet und das Smearing mittels
+        der Closing Operation durchgef"uhrt.
+
+  \item Eine BCC--Analyse auf dem {\em verschmierten\/} Bin"arbild ergibt die
+        Konturen der Textblockhypothesen. Zusammenfassung der urspr"unglichen BCC--Objekte innerhalb der
+        gefundenen Konturen zu Textbl"ocken.
+\end{itemize}
+\subsection{XY--Cut}\label{XYCut}
+
+In diesem Schritt wird versucht, ausgehend von den Zusammenhangsobjekten, das Layout in
+seine grobe Struktur zu zerlegen. Die Zerlegung erfolgt alternierend mit Schnitten parallel
+zur X-- und Y--Achse. Um die Schnittpositionen parallel zur Y--Achse zu bestimmen, werden alle umschreibenden Rechtecke der BCC--Objekte auf die Horizontale projiziert (analog X--Achse).
+Es entsteht ein sogenanntes Projektionsprofil oder Projektionshistogramm
+(s.\ \BildRef{Projektionsprofil}).
+
+\Bild{ProjektionT}{8}{Projektion einer BCC--Box}
+
+In das Histogramm wird nicht jeder einzelne schwarze Pixel aufgenommen, sondern nur die
+obere und untere Kante (bzw.\ linke und rechte) der umschreibenden Rechtecke und
+da\-zwischen\-liegende Werte im Abstand von 10 Pixel.
+Beispielsweise ist das BCC--Objekt in \BildRef{ProjektionT} etwa 40 Pixel hoch,
+was f"unf Eintr"agen im Projektionshistogramm entspricht. W"urde man dagegen jeden
+schwarzen Pixel projizieren, k"ame es zu etwa 200 bis 400 Eintr"agen.
+
+\Bild{Projektionsprofil}{13}{Vertikales Projektionsprofil}
+
+In der folgenden Histogrammuntersuchung werden Bereiche $[x_{min}, x_{max}]$ bzw.\
+$[y_{min}, y_{max}]$ mit einer absoluten H"aufigkeit von Null bestimmt, d.h.\ innerhalb dieser
+Spalten bzw.\ Zeilen befindet sich kein BCC--Objekt. Die Schwelle
+$s_j$, bei der die Gebiete getrennt werden, wird mit jedem Wechsel der
+Schnittrichtung (Level) erniedrigt (siehe Parametrierung).
+
+Dadurch werden immer kleinere Bereiche
+als Schnittposition ausgew"ahlt und die Segmentierung wird immer feiner. Da im vorliegenden Fall
+nur eine sehr grobe Einteilung gefordert ist, reichen drei bis vier Schritte aus.
+
+Der XY--Cut Proze"s wird horizontal begonnen. Existieren hier
+keine m"oglichen Schnittpositionen, so wird die vertikale Projektion ermittelt und fortgefahren.
+Die Ergebnisse werden in einer hierarchischen Baumstruktur (XY--Tree) abgelegt. Die Bl"atter
+des Baumes enthalten die Gebiete (repr"asentiert als Rechtecke)
+die f"ur die weiteren Schritte ben"otigt werden
+(Gebiete 0.1, 0.2.2, 0.2.1.1 und 0.2.1.2 aus \BildRef{XYTree}).
+
+\Bild{XYTree}{7}{XY--Tree vom Dokument aus \protect\BildRef{XYCutIdee}}
+
+\pagebreak[4]
+{\bf Parametrierung:}
+
+Es gilt nun, die Schwelle $s_j$ unabh"angig vom Dokumenttyp zu parametrieren.
+Dazu wird die mittlere H"ohe $\bar{h}$ der BCC-Bounding Boxes im betrachteten Block
+berechnet und mit $c_{XYj}$ gewichtet (s. Parametereingabe \BildRef{ParameterPanelTopDown}).
+So ergibt sich $s_j = c_{XY_j}\bar{h}$. Der Wert $\bar{h}$ wird bei jedem Wechsel der
+Projektionsrichtung neu berechnet
+und somit an die neuen Gr"o"senverh"altnisse innerhalb der getrennten Gebiete angepa"st.
+
+Ein vertikaler Schnitt erfolgt, wenn gilt (horizontal analog):
+
+$$x_{max} - x_{min} > s_j \qquad\mbox{mit}\qquad s_j = c_{XY_j}\bar{h}
+  \qquad\mbox{und}\qquad j=0,1,2\ldots 8$$
+
+Die mittlere Box--H"ohe $\bar{h}$ berechnet sich aus dem arithmetischen Mittel der H"ohen der
+umschreibenden Rechtecke der BCC--Objekte. Objekte mit einer H"ohe unter 6pt werden nicht mit in die
+Berechnung eingeschlossen, da es sich dabei meist um Satzzeichen o."a.\ handelt, die die
+Statistik verf"alschen w"urden.
+
+\begin{eqnarray}\label{MeanHeight}
+  \bar{h} = \frac{1}{n} \sum_{j=1}^n h_j \qquad h_j > 6\mbox{pt} \;\forall\; j
+\end{eqnarray}
+
+\Bild{ParameterPanelTopDown}{14}{Parameter f"ur das XY--Cut Verfahren}
+
+\subsection{Subsampling}
+Das von Schmutzteilchen und Nicht--Textobjekten gereinigte Bin"arbild wird nach folgendem
+Schema unterabgetastet (Rangordnungsfilter):
+Das Bin"arbild wird in nicht"uberlappende Rechtecke von 8x8 Pixel eingeteilt.
+Jeder dieser Bl"ocke wird nun auf einen Pixel abgebildet. Dieses Vorgehen entspricht einer
+Reduzierung des Datenvolumens um den Faktor 64. Gez"ahlt werden alle schwarzen Pixel
+innerhalb jedes einzelnen Blocks. Ist die Anzahl gleich oder gr"o"ser einem Schwellwert,
+so wird der Pixel im reduzierten Bild schwarz, ansonsten wei"s.
+Dieser Schwellwert sollte relativ klein gew"ahlt werden, damit alle schwarzen Pixel
+erhalten bleiben. Standardeinstellung f"ur die Schwelle ist eins (siehe \BildRef{Subsampling}
+und Parametrierung \BildRef{ParameterPanelBottomUp} Seite \pageref{eps:ParameterPanelBottomUp}).
+
+\Bild{Subsampling}{6}{Reduktionsschema: Jeder 8x8 Block wird auf ein Pixel reduziert}
+
+Bei dieser Art der Datenreduktion gehen keine f"ur die folgenden Schritte ben"otigten
+Informationen verloren. Eine OCR--Analyse w"are aufgrund der fehlenden Detailinformation,
+aber mit reduziertem Bin"arbild nicht mehr m"oglich (entspr"ache einer Scanneraufl"osung
+von 40dpi).
+
+\subsection{Smearing}
+Den Ausgangspunkt f"ur das Smearing--Verfahren bilden die beim XY--Cut Verfahren gefundenen Gebiete
+$T_{XY}$ sowie das unterabgetastete Bin"arbild.
+Innerhalb der Gebiete $T_{XY}$ werden nun die Smearingparameter
+berechnet. Hier mu"s ein Kompromi"s gefunden werden: Wird die Maskenbreite oder --h"ohe zu gro"s
+gew"ahlt, k"onnen Fehler entstehen, die durch nachfolgende Schritte nicht, oder nur durch
+aufwendige Verfahren, korrigierbar sind. Andererseits bringt das Smearing bei zu kleiner
+Paramerterwahl auch keine zufriedenstellenden Ergebnisse -- hier ist ebenfalls eine aufwendige
+Nachbearbeitung erforderlich. Des weiteren ist es nicht sinnvoll, die Parameter statisch,
+d.h.\ nur auf eine Dokumentklasse optimiert, festzulegen.
+Da das System die ben"otigten Parameter selbst"andig an das Layout anpassen mu"s,
+wird zun"achst der Zeilenabstand gesch"atzt (s.\ \BildRef{SmearingOptimal}).
+Dieser ist definiert als die Summe aus Schriftgr"o"se und Durchschu"sh"ohe. Die Durchschu"sh"ohe
+ist dabei der Abstand der Unterkante eines kleinen Buchstabens mit
+Unterl"ange (z.B.\ "`g"') bis zur Oberkante eines Gro"sbuchstabens.
+
+\Bild{SmearingOptimal}{10}{Optimale Smearing--H"ohe}
+
+\subsubsection{Zeilenabstandsch"atzung}\label{Zeilenabstand}
+
+Die Sch"atzung des Zeilenabstandes erfolgt nach folgendem Prinzip: Die Mittelpunkte der
+Zusammenhangsobjekte werden auf die vertikale Achse projiziert.
+Dadurch erh"alt man ein Profil, bei dem die Maxima
+die Textzeilen und die Minima die Zeilenzwischenr"aume repr"asentieren. Dieses Verfahren wird
+daher {\em Profiling\/} genannt (siehe auch \cite{Bohnacker93}).
+Aus dem Profil l"a"st sich nun der h"aufigste Abstand der Maxima
+bestimmen. Dieser Wert ist eine gute Sch"atzung f"ur den Zeilenabstand.
+
+Verfahrensschritte:
+\begin{itemize}
+  \item{\bf Kleine BCC--Objekte herausfiltern:}\\
+  Da die Positionen von kleinen Objekten innerhalb einer Zeile stark variieren, m"ussen
+  sie vor der Projektion herausgefiltert werden. Beispielweise befinden sich Satzzeichen am
+  unteren Zeilenrand, dagegen Anf"uhrungs- und Umlautzeichen am oberen. Die Filterschwelle
+  f"ur kleine Zeichen wird in Abh"angigkeit der mittleren Boxh"ohe eingestellt.
+
+  \item {\bf Zeilenprofil erstellen:}\\
+        Projiziert man die Mittelpunkte der gefilterten Objekte auf die vertikale Achse, entsteht
+        in einem Histogramm ein Zeilenprofil (s.\ \BildRef{ZeilenProfil}).
+        Um die Histogramm\-auswertung zu beschleunigen, wird die Klassenanzahl reduziert. Hierbei werden
+        $\bar{h}$ (\ref{MeanHeight}) Klassen (Zeilen) zu f"unf Histogrammspalten zusammengefa"st.
+        Die weitere Konzentration der Maxima wird erreicht, indem das Histogramm zus"atzlich
+        mit dem Gravitationsfilter bearbeitet wird.
+
+        \item{\bf Zeilenabstand sch"atzen:}\\
+        Die Abst"ande der Maxima werden wiederum in einem Histogramm aufbereitet.
+        Der Zeilenabstand $\bar{Z}$ ist nun die Klasse mit den meisten Eintragungen (\BildRef{ZeilenHistogramm}).
+        Weniger wahrscheinliche Werte, die z.B.\
+        kleiner als die Zeichenh"ohe sind, werden verworfen, und das Maximum mit der
+        n"achst kleineren H"aufigkeit untersucht.
+\end{itemize}
+
+\Bild{ZeilenProfil}{15}{Zeilenprofil -- vertikale Projektion der Objektmittelpunkte
+  vor und nach der Gravitationsfilterung}
+
+\Bild{ZeilenHistogramm}{5}{Histogramm "uber die Abst"ande der Maxima im Zeilenprofil}
+
+\subsubsection{Smearing--Window}
+
+Mit Hilfe des Zeilenabstandes $\bar{Z}$ kann nun die H"ohe der Smearing Maske $S_h$
+bestimmt werden (s.\ \BildRef{Zeilenabstand}), wobei Untersuchungen gezeigt haben, da"s
+$S_h$ anstelle $S_h = \bar{Z} - \bar{h}$ etwas gr"o"ser gew"ahlt kann
+($\bar{h}$ entspricht der mittleren Zeichenh"ohe siehe Gleichung (\ref{MeanHeight})):
+$$S_h = \bar{Z} - \frac{\bar{h}}{2}$$
+
+\Bild{Zeilenabstand}{8}{Zusammenhang zwischen Zeilenabstand und Smearing--H"ohe}
+
+Die dazugeh"orige Breite $S_w$ sollte mit Bedacht gew"ahlt werden. Werden "uber mehrere
+Spalten hinweg Objekte verbunden, m"ussen diese -- wenn im nachhinein noch m"oglich -- in nachfolgenden
+Korrekturschritten wieder getrennt werden. Andererseits sollen die vorhandenen
+Textbl"ocke nicht in viele Einzelteile zerfallen.
+Untersuchungen haben ergeben, da"s die mittlere Objekth"ohe $\bar{h}$ multipliziert mit
+dem konstanten Wert $1.4$ gute Ergebnisse liefert. Der Wert $c_w$ ist "uber die
+Parametereingabe "anderbar (s.\ Parametrierung \BildRef{ParameterPanelBottomUp} Seite
+\pageref{eps:ParameterPanelBottomUp}).
+
+$$S_w = c_w  \bar{h}\qquad c_w = 1.4$$
+
+\subsubsection{Konkrete Ausf"uhrung}
+
+Die Closing--Operation kann sehr effizient ausgef"uhrt werden. Bei der Dilatation wird eine
+Kopie des Bin"arbildes um einen Pixel versetzt erstellt und mit dem Original durch ein
+logisches ODER verkn"upft.
+Da nach dem ersten Schritt keine alleinstehenden Schwarzpixel mehr vorkommen, wird das
+Bin"arbild beim zweiten Schritt um zwei Pixel versetzt, beim dritten um vier usw. Die
+anschlie"sende Erosion erfolgt analog, mit dem Unterschied, da"s die Bin"arbilder durch ein
+logisches UND zu verkn"upfen sind.
+
+\subsection{Zuordnen der BCC--Objekte zu Textbl"ocken}
+Nach dem Smearing wird auf dem daraus resultierenden Bin"arbild eine Zusammenhangsanalyse
+vorgenommen. Es ergeben sich nach der R"ucktransformation von der reduzierten Aufl"osung
+auf die Originalaufl"osung die "au"seren Konturen der hypothetischen Textbl"ocke
+(s.\ \BildRef{SmearingKontur}).
+
+\Bild{SmearingKontur}{8}{Eine BCC--Analyse auf dem {\em verschmierten\/} Bin"arbild ergeben die Konturen der Textbl"ocke}
+
+Nun gilt es, die BCC--Objekte des Originalbildes, die sich innerhalb derselben Blockkontur befinden, zu einem Textblock zu vereinigen.
+"Uberlappen sich die umschreibenden Rechtecke der Blockkontur nicht
+(s.\ \BildRef{SmearingKonturZuordnung} TB3) w"urde es gen"ugen, die Objekte zu einem Block
+zusammenzufassen, die sich innerhalb des
+Rechtecks befinden. Im Normalfall mu"s man aber davon ausgehen, da"s sich die umschreibenden
+Rechtecke der Blockkonturen "uberlappen (s.\ \BildRef{SmearingKonturZuordnung} TB1 und TB2).
+Daher m"ussen diejenigen Objekte aussortiert werden,
+die sich zwar innerhalb der Bounding--Box, aber au"serhalb der betrachteten Blockkontur (TB1) befinden.
+
+\Bild{SmearingKonturZuordnung}{10}{"Uberlappende Boxes der Blockkonturen}
+
+Die Blockkontur hat die Eigenschaft, da"s sie die BCC--Objekte immer vollst"andig enth"alt.
+Deshalb gen"ugt es, zu untersuchen, ob sich ein beliebiger Punkt aus der BCC--Kontur des
+einzugliedernden Objekts innerhalb einer Blockkontur befindet.
+
+Hierzu bietet sich folgende L"osung an:
+Man zeichne eine von dem zu untersuchenden Punkt beginnende Halbgerade
+(die so lange ist, da"s ihr anderer Endpunkt garantiert au"serhalb des Polygons der Blockkontur
+liegt) und z"ahle die Polygonabschnitte, die sie schneidet.
+Ist die Anzahl ungerade, so liegt der Punkt innerhalb des Polygons; ist sie gerade,
+liegt er au"serhalb (\BildRef{PunktInPolygon}).
+
+\Bild{PunktInPolygon}{12}{Punkt im einem Polygon}
+
+Da Konturpolygone aus Bin"arbildern erzeugt werden, bestehen sie nur aus
+waagerechten und senkrechten Linienelementen, so da"s es sich empfiehlt, die Halbgerade ebenso
+waagerecht oder senkrecht zu w"ahlen. Dadurch vereinfacht sich die Untersuchung, ob und wie
+oft sich die Gerade mit dem Polygon schneidet.
+
+  {\bf Parametrierung:}
+
+\Bild{ParameterPanelBottomUp}{14}{Parameter f"ur die Unterabtastung und das Smearing}
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+\clearpage
+\section{Aufspalten von Textblockhypothesen}
+
+Prinzipiell verbindet das Smearing s"amtliche Gebiete, die in r"aumlicher N"ahe zueinander
+stehen, ohne auf deren Gestalt R"ucksicht zu nehmen.
+Folgende Fehler in den Textblockhypothesen m"ussen deshalb korrigiert werden:
+\begin{itemize}
+  \item Die BCC--Objekte innerhalb eines Blocks sind nicht homogen
+        (s.\ \KapRef{Konsistenzpruefung}).
+  \item Ein Textblock wird durch ein Liniensegment durchtrennt (s.\ \KapRef{LinienSchnitte}).
+  \item Nebeneinanderliegende Spalten werden verbunden (s.\ \KapRef{HorKleb}).
+\end{itemize}
+
+\subsection{Konsistenzpr"ufung}\label{Konsistenzpruefung}
+
+Da als grundlegende Forderung an die Segmentierung die Homogenit"at der
+Textbl"ocke gestellt wurde, mu"s dem Smearing eine Konsistenzpr"ufung folgen. Versuche mit
+verschiedenen Dokumentklassen haben gezeigt, da"s h"aufig Textzeilen verschiedener
+Schriftgr"o"sen oder Schriftst"arken verbunden werden (s.\ \BildRef{SmearingFehler}). Deshalb
+werden die Eigenschaften jeder Textzeile bestimmt und mit der ihr folgenden verglichen.
+Liegen die Differenzen "uber einer bestimmten Schwelle, wird der Block zwischen diesen zwei
+Zeilen durchtrennt. Hierbei wird angenommen, da"s die Objekte innerhalb einer Zeile
+konsistent sind.
+
+\Bild{SmearingFehler}{8}{Fehlerhafte Verschmelzungen durch das Smearing (links Schriftgr"o"se, rechts Schriftst"arke)}
+
+Die Homogenit"at bezieht sich auf die Eigenschaften, die sich
+aus den Zusammenhangselementen ableiten lassen. Es wird die mittlere H"ohe der
+umschreibenden Rechtecke der BCC--Objekte (R"uckschl"usse "uber Homogenit"at der Buchstabengr"o"se),
+und die Strichst"arke (R"uckschl"usse "uber Homogenit"at der Gestalt) betrachtet. Weitere Kriterien
+wie Schriftauspr"agungen (serifenlos, proportional, kursiv) oder Schriftklassen
+(Antiqua, Schreibschriften, Frakturen) sind vorstellbar, wurden jedoch nicht untersucht.
+
+\subsubsection{Homogenit"atskriterien}\label{Homogenitaet}
+\begin{enumerate}
+
+  \item{\bf Mittlere Objekth"ohe:}\\
+  Die mittlere Boxh"ohe $\bar{h}$ wurde bereits in den vorherigen Abschnitten eingesetzt
+  um die Parameter
+  unabh"angig von der Layoutstruktur einzustellen. Sie berechnet sich aus dem arithmetischen
+  Mittel der H"ohen der BCC--Objekte:
+  %
+  $$\bar{h} = \frac{1}{n} \sum_{j=1}^n h_j \qquad h_j > 6\mbox{pt} \;\forall\; j.$$
+
+  \item{\bf Strichdicke:}\\
+  Die Strichdicke oder Strichst"arke eines Zeichens ist definiert als das Verh"altnis der
+  Strichbreite $d$ zur H"ohe $h$ des Zeichens. Im allgemeinen wird die Strichdicke auf die H"ohe
+  der Gro"sbuchstaben bezogen und in Prozent angegeben, so da"s der Wert unabh"angig von der
+  individuellen Schrifth"ohe ist.
+
+  Die Strichdicke eines Zeichens l"a"st sich mit folgendem Ansatz bestimmen:
+  Ein Strich wird durch ein Rechteck der L"ange $l$ und Dicke $d$ modelliert,
+  welches denselben Umfang $U$ und Fl"acheninhalt $F$ wie das Bin"arbild des Zeichens besitzen soll
+  (s.\ \cite{Kuropka90}).
+  %
+  \begin{eqnarray}
+    U_{Strich} &=& 2 * ( l + d)\label{UStrich}\\
+    F_{Strich} &=& l * d\label{FStrich}
+  \end{eqnarray}
+  %
+  Aus (\ref{UStrich}) und (\ref{FStrich}) ergibt sich die absolute Strichdicke $d$:
+  %
+  \begin{eqnarray}
+    d^2 - \frac{U}{2}d + F = 0\nonumber\\
+    d = \frac{U}{4} * \left( 1 - \sqrt{ 1-16*\frac{F}{U^2} } \;\right)\label{Strich}
+  \end{eqnarray}
+  %
+  Da verlangt wird, da"s $U_{Strich} = U_{Zeichen} = U$ und $F_{Strich} = F_{Zeichen} = F$, mu"s
+  die Fl"ache $F_{Zeichen}$ und der Umfang $U_{Zeichen}$ jedes Zeichens berechnet werden.
+  Da etwa 90\% der Zusammenhangsobjekte einzelne Buchstaben darstellen, k"onnen
+  Umfang und Fl"ache eines Buchstabens direkt aus den BCC--Objekten berechnet werden.
+  Da Buchstaben nur wei"se Gebiete enthalten, jedoch keine weiteren schwarzen Gebiete,
+  gen"ugt es nur die S"ohne des BCC--Objektes zu betrachten.
+
+  Der Umfang eines Zeichens ist die Summe aus dem "au"seren schwarzen Umfang und dem Umfang
+  der inneren wei"sen Einschl"usse:
+  %
+  $$U_{Zeichen} = U_{BCC} + \sum_{\mbox{\footnotesize S"ohne}} U_{BCC}$$
+  %
+  Der Umfang eines BCC--Objektes ist definiert als die L"ange der durch die Rastergrenzlinie beschriebenen Kontur und ergibt sich als Summe der L"angen der Teilkonturen
+  (mit $n$ als die Anzahl der Eckpunkte und $x$/$y$ als die St"utzpunkte der BCC--Kontur):
+  %
+  \begin{eqnarray*}
+    U_{BCC} &=& \sum^{n/2}_{i=1} \left|y_{2i} - y_{2i+1} \right| + \left|x_{2i} - x_{2i-1} \right|\\[2mm]
+    y_{n+1} &=& y_1
+  \end{eqnarray*}
+  %
+  Analog wird der Fl"acheninhalt berechnet: Fl"ache, die die "au"sere Kontur einschlie"st, abz"uglich
+  der inneren wei"sen Fl"achen:
+  %
+  $$F_{Zeichen} = F_{BCC} - \sum_{\mbox{\footnotesize S"ohne}} F_{BCC}$$
+  %
+  Die Fl"ache eines BCC--Objektes, beschrieben durch die Kontur, ergibt sich nach l"angerer
+  Rechnung wie folgt \cite{Bartneck87}:
+  %
+  $$F_{BCC} = \sum^{n/2}_{i=1} \left(x_{2i} - x_{2i-1} \right) y_{2i}$$
+  %
+  Die mittlere relative Strichdicke $\bar{d_r}$ ergibt sich aus dem arithmetischen Mittel aller
+  Strichdicken $d$ innerhalb eines Textblocks, normiert auf die mittlere Buchstabenh"ohe~$\bar{h}$.
+  Hierbei werden analog zur Berechnung von $\bar{h}$ Gleichung (\ref{MeanHeight}) nur BCC--Objekte
+  betrachtet, deren H"ohen gr"o"ser als 6pt sind:
+  %
+  \begin{eqnarray}
+    \bar{d_r} = \frac{1}{n \bar{h}} \sum_{j} d_j
+  \end{eqnarray}
+  %
+  Abbildung \ref{eps:StrichdickeFonthoehe} zeigt die Abh"angigkeit der Strichdicke $\bar{d_r}$
+  von der Buchstabengr"o"se. Da\-raus ist ersichtlich, da"s Objekte gleicher Buchstabengr"o"se, aber
+  unterschiedlicher Strichdicken, sicher unterschieden werden k"onnen.
+  %
+  \Bild{StrichdickeFonthoehe}{8}{Abh"angigkeit der Strichdicke von der Zeichenh"ohe}
+\end{enumerate}
+
+\subsubsection{Homogenit"at zwischen Textzeilen}
+Der Ablauf ist wie folgt gegliedert:
+\begin{enumerate}
+  \item {\bf Zeilen erzeugen:}\\
+        Mit dem Profiling--Verfahren wird analog der Berechnung des Zeilenabstandes ein Zeilenprofil
+        erstellt. Eine vorherige Filterung der kleinen Segmente findet hier nicht statt, da
+        diese sonst nachtr"aglich den Zeilen zugeordnet werden m"u"sten.
+  \item {\bf Nachfolgende Zeilen vergleichen:}\\
+        Es werden die mittlere Boxh"ohe und die Strichdicke f"ur jede Zeile berechnet und mit
+        aufeinanderfolgenden Zeilen verglichen
+        ($\bar{h_1}$, $\bar{h_2}$ seien die mittleren H"ohen und $\bar{d_{r1}}$, $\bar{d_{r2}}$ die
+        mittleren relativen Strichst"arken der zwei zu untersuchenden Zeilen). Die
+        maximale relative Differenz $c_{err}$ l"a"st sich als Parameter einstellen
+        (s.\ \BildRef{ParameterPanelSplit} Seite \pageref{eps:ParameterPanelSplit}).
+        Eine Trennung dieser Zeilen erfolgt, wenn
+
+        $$\frac{|\bar{h_1}-\bar{h_2|}}{\min (\bar{h_1},\bar{h_2})} > c_{err}
+          \qquad\mbox{oder}\qquad
+          \frac{|\bar{d_{r1}}-\bar{d_{r2}|}}{\min (\bar{d_{r1}},\bar{d_{r2}})} \;>\; c_{err}.$$
+
+        Dabei galt es folgende Probleme zu l"osen:
+        \begin{itemize}
+          \item Besteht eine der zwei Zeilen aus nur wenigen Objekten
+                (die Objektanzahlen in den Zeilen seien $n_1$ und $n_2$), dann ist die berechnete
+                Statistik "uber $\bar{h}$ und $\bar{d_r}$ sehr unsicher. Um zu vermeiden, da"s kurze Zeilen
+                f"alschlicherweise von einem Block getrennt werden, wird daher $c_{err}$ mit $g(n_1,n_2)$
+                gewichtet (\BildRef{ErrWeight}).
+                Diese Funktion wurde heuristisch aus Experimenten gewonnen. Befinden sich
+                in einer Zeile weniger als 20 BCC--Elemente, darf sich der Fehler bis um den Faktor zwei
+                erh"ohen, ohne da"s es zu einer Trennung der Zeilen kommt.
+
+                \Bild{ErrWeight}{6.5}{Gewichtungsfunktion}
+
+          \item Da bei der Erzeugung des Zeilenprofils die kleinen Segmente nicht entfernt werden, kann
+                es vorkommen, da"s Zeilen entstehen, die ausschlie"slich Satzzeichen
+                oder Umlautzeichen enthalten
+                (s.\ \BildRef{ProfilingFehler}). Um eine Trennung, die zwangsl"aufig geschehen w"urde, zu
+                vermeiden, m"ussen diese Zeilen zuverl"assig erkannt werden. Zuerst werden die
+                umschreibenden Rechtecke der zu untersuchenden Zeilen berechnet. "Uberlappen sich diese
+                Rechtecke in der Vertikalen und ist die Buchstabengr"o"se einer Zeile sehr viel kleiner
+                ($c_{err} > 2.5$) als die der anderen, so handelt es sich h"ochstwahrscheinlich um einen
+                Fehler im Zeilenprofil -- folglich d"urfen diese zwei Zeilen nicht getrennt werden.
+
+                \Bild{ProfilingFehler}{8}{Fehlerhaftes Zeilenprofil}
+
+          \item Ein typisches Gestaltungsmittel f"ur Artikel in Zeitungen und Zeitschriften
+                besteht darin, da"s der erste Buchstabe in der ersten Zeile
+                "uberdimensional gro"s -- zumeist so hoch wie zwei bis drei Zeilen -- gedruckt wird.
+                Diese Buchstaben dienen als Blickfang, man spricht hier von einem {\em Initial\/}
+                (s.\ \BildRef{Initial}).
+
+                \Bild{Initial}{8}{Beispiele f"ur Initiale}
+
+                Diese Initiale, die eine Nichthomogenit"at {\em innerhalb\/} einer Zeile darstellen,
+                k"onnen relativ einfach erkannt werden (Widerspruch der Hypothese, da"s die Elemente in
+                einer Zeile konsistent sind):
+                Dazu werden die ersten vier Zeilen am linken Rand auf ein extrem gro"ses BCC--Objekt hin
+                untersucht. Betr"agt die H"ohe mindestens das Zweifache der mittleren Buchstabenh"ohe $\bar{h}$,
+                wird das BCC--Objekt als Initial klassifiziert, von der Zeile getrennt und in einem
+                separaten Textblock angelegt (Ergebnis siehe \BildRef{HomoCheckErg} Seite
+                \pageref{eps:HomoCheckErg}).
+        \end{itemize}
+\end{enumerate}
+
+\subsection{Schnitt mit Liniensegmenten}\label{LinienSchnitte}
+
+In einem weiteren Korrekturschritt werden Liniensegmente und Textrahmen
+(Extraktion siehe Filterung \KapRef{Filterung}) bei der
+Textblocksegmentierung einbezogen. Sie werden h"aufig im Layout von Tageszeitungen eingesetzt
+und dienen dazu inhaltlich unabh"angige Textbereiche voneinander zu trennen.
+
+\Bild{LineIntersec}{11}{Liniensegmente dienen als Trenner, wenn sie in Textbl"ocke hineinragen}
+
+F"ur jedes Liniensegment wird berechnet um wieviel es in die umschreibenden Rechtecke der
+Textblockhypothesen hineinragt (s.\ \BildRef{LineIntersec}).
+Dieser Wert, $l$ genannt, wird auf die Textblockbreite $w_{TB}$
+bei horizontalen Linien bzw.\ auf die Textblockh"ohe $h_{TB}$ bei vertikalen Linien normiert.
+Es ergibt sich
+
+$$l_r = \left\{
+  \begin{array}{l@{\qquad}l}
+    \frac{l}{w_{TB}} * 100\% & \mbox{bei horizontalen Linien} \\
+    \frac{l}{h_{TB}} * 100\% & \mbox{bei vertikalen Linien}
+  \end{array}\right.$$
+
+"Ubersteigt $l_r$ eine als Parameter einstellbare Schwelle $l_{rCUT}$ (s.\ Parametrierung
+\BildRef{ParameterPanelSplit}), so wird der Textblock an der Linienschnittstelle aufgespalten.
+
+\subsection{Horizontale Verbindungen zwischen Spalten}\label{HorKleb}
+
+Durch die statische Festlegung der Smearing--Fensterbreite k"onnen sich Spalten horizontal verbinden. Dies ist zum Beispiel der Fall, wenn Liniensegmente aufgrund zu
+kleiner Scanner--Aufl"osung in viele kleine St"ucke zerfallen. Diese St"ucke sind dann nicht mehr als
+Linie zu erkennen, aber oftmals wiederum zu gro"s, um bei der Filterung in Kapitel
+\ref{Filterung} gel"oscht zu werden. Sie dienen beim Smearing als {\em Br"ucke\/} zwischen
+Textspalten (s.\ \BildRef{HorizKleb}). Im Gegensatz zum vorigen Abschnitt \ref{LinienSchnitte}
+stehen hier keine Liniensegmente als Layoutbegrenzung zur Verf"ugung.
+
+\Bild{HorizKleb}{10}{Linienreste zwischen Textspalten f"uhren zur Verbindung von Spalten}
+
+Ein einzelner sekrechter XY--Cut, angewandt auf jede Textblockhypothese,
+versucht Verklebungen zwischen Spalten festzustellen:
+\begin{enumerate}
+  \item Um gr"o"sere St"orungen und zerfallene Linienst"ucke zu entfernen, wird die Menge der
+        BCC--Objekte erneut gefiltert. Hierbei wird die Filterschwelle $h'_{min}$ und $w'_{min}$
+        kleiner als in Kapitel \ref{Filterung} angesetzt:
+
+        $$h'_{min} = \frac{3}{5}\bar{h} \qquad w'_{min} = \frac{1}{2}\bar{h}$$
+
+  \item Die anschlie"senden Verfahren entsprechen einem vertikalen XY--Cut (s.\ \KapRef{XYCut}):
+        Die BCC--Objekte werden auf die horizontale Archse projiziert und das sich ergebende
+        Projektionshistogramm wird analog den XY--Cuts ausgewertet, d.h.\ es wird ein einzelner
+        vertikaler XY--Cut durchgef"uhrt. Als Parameter l"a"st sich der XY--Cut Startlevel einstellen
+        (s.\ \BildRef{ParameterPanelSplit}).
+
+  \item Konnte das XY--Cut Verfahren ein oder mehrere vertikale Leerr"aume finden, so wird
+        angenommen, da"s Spalten durch das Smearing horizontal verbunden wurden.
+        Die Textblockhypothese wird an diesen Stellen aufgespalten und die
+        beiseitegelegten `kleinen' BCC--Objekte in die entsprechenden neuen Bl"ocke wieder eingeordnet.
+\end{enumerate}
+
+{\bf Parametrierung}
+
+\Bild{ParameterPanelSplit}{16}{Parameter f"ur das Aufspaltung von Textbl"ocken}
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+\clearpage
+\section{Zusammenfassen von Textblockhypothesen}\label{Zusammenfassen}
+
+Bisherige Schritte verhindern nicht, da"s homogene Textbl"ocke dennoch getrennt werden, u.a.\
+bei nichtproportionaler Schrift (i.d.R.\ mit der Schreibmaschine) und zus"atzlichem Blocksatz (s.\
+\BildRef{FixedSpacedDemo}).
+
+\Bild{FixedSpacedDemo}{10}{Nichtproportionaler Text mit zus"atzlichem Blocksatz f"uhrt zu ungewollten Trennungen}
+
+Dieses Problem k"onnte durch eine Erh"ohung der Smearing--Window--Breite vermieden werden,
+jedoch f"uhrt dies zu Problemen bei mehrspaltigem Layout.
+Deshalb werden in diesem Bearbeitungsschritt aufgrund von Regeln, die die geometrische Ausrichtung und die Homogenit"at ber"ucksichtigen, Bl"ocke weiter verbunden:
+\begin{itemize}
+  \item Sortierung der Textbl"ocke nach ihrer r"aumlichen N"ahe durch die Aufstellung eines
+        minimalen Spannbaumes.
+  \item Aufstellen von Kriterien und Regeln bez"uglich der Vereinigung.
+  \item Verbinden der Textbl"ocke durch Relaxation.
+\end{itemize}
+
+\subsection{Minimum Spanning Tree}
+
+Fa"st man Textblockhypothesen zusammen, ist es nicht sinnvoll, jeden Textblock mit jedem
+anderen zu vergleichen, da nur r"aumlich benachbarte Hypothesen zu einem Block vereinigt werden.
+Bei $n$ Paragraphen w"aren $n(n-1)/2$ Vergleiche notwendig.
+Allerdings kann der Aufwand von $O(n^2)$ deutlich
+reduziert werden, wenn nur r"aumlich benachbarte Bl"ocke verglichen werden.
+Um dieses Problem zu l"osen wird eine zweidimensionale Sortierung der Textbl"ocke nach r"aumlicher
+N"ahe durchgef"uhrt. Diese Sortierung erfolgt durch die Berechung des
+  {\em minimalen Spannbaumes\/} (Minimum Spanning Tree).
+
+\newpage
+{\bf Definition:}\\
+Ein {\em Graph\/} $G=(V,E)$ ist eine Menge von {\em Knoten\/} (oder {\em Ecken\/}) $V$
+und {\em Kanten\/} $E$. Knoten sind einfache Objekte; eine Kante ist eine Verbindung
+zwischen zwei Knoten $(u,v)\in E$. Mit jeder Kante, die die Knoten $u$ und $v$ verbindet,
+sind {\em Gewichte\/} oder {\em Kosten\/} $w(u,v)$ verkn"upft.
+
+Der {\em minimale Spannbaum\/} eines gewichteten Graphen mit $V$ Knoten ist die
+Menge $T \subseteq E$ von ($V-1$) Kanten, die alle Knoten so verbindet, da"s die Summe $w(T)$
+der Kantengewichte minimal ist.
+
+$$w(T) \stackrel{\scriptstyle\min}{=} \sum_{(u,v) \in T} w(u,v)$$
+
+Der Berechnungsalgorithmus l"a"st sich folgenderma"sen beschreiben:
+Einem Graphen werden,
+beginnend mit der k"urzesten Kante, d.h.\ der Kante mit dem geringsten Gewicht,
+nacheinander Kanten (die keinen Zyklus bilden) mit n"achstgr"o"seren Gewichten hinzugef"ugt.
+Ein Zyklus ist ein Pfad, auf dem sich kein Knoten wiederholt.
+Dieser Algorithmus ist bereits seit 1956 bekannt und wird J.\ Kruskal zugeschrieben
+\cite{Algorithmen}.
+
+Die Knoten werden hier als Textbl"ocke interpretiert. Jede der $V-1$ Kanten verbindet somit
+zwei Textbl"ocke, d.h.\ diese Bl"ocke stehen in r"aumlicher N"ahe zueinander. Es gen"ugt nun
+diese $V-1$ Paare f"ur die weitere Betrachtung heranzuziehen.
+Um die Anzahl der zu untersuchenden Textbl"ocke noch weiter zu senken, werden
+Bl"ocke, die sich zusammen in der durch XY-Cuts berechneten Gebiete befinden,
+separat betrachtet. Ein Beispiel f"ur einen minimalen Spannbaum ist in
+Abbildung \ref{eps:MSTDemo} zu sehen.
+
+\Bild{MSTDemo}{6}{Minimaler Spannbaum}
+
+Diese Kantengewichte $w(u,v)$ entsprechen den Abst"anden der Textbl"ocke zueinander, wobei
+zus"atzlich der horizontale $\Delta x$ und vertikale $\Delta y$ Abstand unterschiedlich
+bewertet werden kann ($w_x$ und $w_y$ sind als Parameter einstellbar -- siehe
+\BildRef{ParameterPanelMerge} Seite \pageref{eps:ParameterPanelMerge}).
+Ist zum Beispiel das Verh"altnis $w_x / w_y$ kleiner eins,
+bedeutet dies, da"s nebeneinanderliegende Textbl"ocke bevorzugt durch den minimalen
+Spannbaum verbunden werden.
+
+$$w(u,v) = w_x \Delta x + w_y \Delta y$$
+
+\Bild{Abstaende}{3}{Definition des Abstands zwischen zwei Textbl"ocken}
+
+Zwei spezielle Teilprobleme bei der Berechnung des minimalen Spannbaumes sollen hier n"aher
+betrachtet werden.
+\begin{itemize}
+  \item
+        Erstens m"ussen die Kanten entsprechend der wachsenden Reihenfolge ihres Gewichts nacheinander
+        betrachtet werden. Eine M"oglichkeit w"are, sie zu sortieren, doch es erweist sich als
+        g"unstiger, eine Priorit"atswarteschlange (s.u.) zu benutzen, vor allem weil im Allgemeinen nicht
+        alle Kanten betrachtet werden m"ussen, und daher eine vollst"andige Sortierung nicht
+        notwendig ist.
+  \item
+        Zweitens mu"s "uberpr"uft werden, ob eine gegebene Kante einen Zyklus erzeugt, wenn sie den bisher
+        verwendeten Kanten hinzugef"ugt wird. Dies kann mit der Vereinigungssuche (s.u.) erledigt werden.
+        Der Proze"s wird beendet, wenn $V-1$ Kanten gefunden wurden, und somit alle $V$ Knoten mit diesen
+        Kanten verbunden werden k"onnen.
+\end{itemize}
+
+\subsubsection{Priorit"atswarteschlangen}
+
+Beim Aufbau des minimalen Spannbaumes m"ussen Datens"atze mit Schl"usseln (in diesem Fall
+Gewichte bzw.\ Abst"ande) der Reihe nach verarbeitet werden; jedoch nicht in einer vollst"andig
+sortierten Reihenfolge.
+Eine geeignete Datenstruktur mu"s unter solchen Bedingungen die Eigenschaft haben, da"s sie
+Operationen des Einf"ugens eines neuen Elements und des L"oschens das gr"o"sten Elementes
+unterst"utzt. Eine derartige Datenstruktur wird {\em Priorit"atswarteschlange\/}
+(Priority Queue) genannt.
+
+Die Datenstruktur, die Operationen mit Priorit"atswarteschlangen erm"oglicht,
+beinhaltet das Speichern der Datens"atze in einem Feld in der Art und Weise,
+da"s jeder Schl"ussel garantiert
+gr"o"ser ist als die Schl"ussel auf zwei bestimmten anderen Positionen. Jeder dieser
+Schl"ussel mu"s wiederum gr"o"ser sein als zwei weitere Schl"ussel usw. Diese Ordnung
+l"a"st sich sehr leicht veranschaulichen, indem das Feld in Form einer
+bin"aren Baumstruktur gezeichnet wird. Von jedem Knoten f"uhren Linien
+nach unten zu den beiden Knoten, von denen bekannt ist, da"s sie kleiner sind
+(s.\ \BildRef{HeapBaum}).
+
+\Bild{HeapBaum}{6}{Darstellung eines Heaps als vollst"andiger bin"arer Baum}
+
+Diese Stuktur wird {\em vollst"andiger bin"arer Baum\/} genannt: Ausgehend von einem
+Knoten ({\em Wurzel\/}) werden nach unten von links nach rechts jeweils
+zwei weitere Knoten unter dem Knoten der vorangegangenen Ebene gezeichnet und mit
+ihm verbunden. Die beiden Knoten unter jedem
+Knoten werden dessen (direkte) {\em Nachfolger\/} (Children) genannt, der Knoten "uber
+jedem Knoten hei"st dessen (direkter) {\em Vorg"anger\/} (Parent). Nun wird gefordert,
+da"s die Schl"ussel im Baum der Heap--Bedingung gen"ugen:
+
+\begin{quote}
+  Der Schl"ussel in jedem Knoten mu"s gr"o"ser (oder gleich) sein als die Schl"ussel
+  in seinen Nachfolgern (falls diese existieren). Der Knoten mit dem gr"o"sten Schl"ussel
+  sitzt somit in der Wurzel.
+\end{quote}
+
+Die hier verwendete M"oglichkeit den Heap darzustellen, ist sequentiell innerhalb
+eines Feldes $a[i]$, indem
+die Wurzel auf die Position 1 gesetzt wird, ihre Nachfolger auf die Positionen
+2 und 3, die Knoten der folgenden Ebene auf die Positionen 4, 5, 6 und 7 usw. Dabei
+gilt
+$$a[i] \; \ge \; a[2i] \qquad \mbox{und} \qquad a[i] \; \ge \; a[2i+1] \qquad 1\le i\le
+  \left\lfloor n/2 \right\rfloor.$$
+
+Alle Algorithmen, wie das Einf"ugen eines Knoten oder das Entfernen des gr"o"sten Knotens,
+operieren entlang eines {\em Pfades\/} von der Wurzel zum unteren Ende des Heaps.
+Dabei befinden sich in einem Heap mit $N$ Knoten auf allen Pfaden $\log_2 N$ Knoten.
+Folglich k"onnen alle Operationen mit Priorit"atswarteschlangen bei Verwendung von Heaps in
+logarithmischer Zeit ausgef"uhrt werden.
+
+Um die Priorit"atswarteschlangen bei der Berechnung von Minimum Spanning Trees nutzen zu
+k"onnen, ist zu beachten, da"s nicht die l"angste, sondern die {\em k"urzeste\/} Kante
+(also die Kante mit dem kleinsten Gewicht) in der Wurzel sitzt.
+Dies wird erreicht, wenn bei der Erzeugung des Heaps nicht das Gewicht
+einer Kante (entspricht Abstand zwischen zwei Bl"ocken), sondern der davon negierte Wert
+in die Knoten eingetragen wird.
+%Somit ist sichergestellt, da"s die k"urzeste Kante in der Wurzel des Heaps sitzt.
+
+\subsubsection{Vereiningungssuche}
+
+Die Vereinigungssuche hat die Aufgabe festzustellen, ob die Knoten $u$ und $v$ miteinander
+verbunden sind. Dies l"a"st sich "uber eine "`Verkettung mit dem Vorg"anger"' erreichen:
+
+Das Feld $dad[u]$ mit $u=1\ldots V$ enth"alt f"ur jeden Knoten $u$ den Index seines Vorg"angers
+mit einem Eintrag Null f"ur den Knoten, der sich an der Wurzel eines Baumes befindet. Um
+den Vorg"anger $pred$ eines Knoten $u$ zu finden, setzt man $pred := dad[u]$, $u := pred$
+und wiederholt diese Operation solange, bis die Wurzel des Baumes, die
+zu dem der Knoten $u$ geh"ort, gefunden wurde (d.h.\ $u = 0$).
+Dasselbe wird f"ur den Knoten $v$ durchgef"uhrt. Sind
+die beiden gefundenen Wurzeln identisch so existiert bereits eine Verbindung
+zwischen diesen Knoten, und das Einf"ugen der Kante $(u,v)$ erzeugt einen Zyklus.
+Sind die Wurzeln verschieden, so wird der Baum mit der Wurzel $u$ mit dem Baum der Wurzel $v$
+verkn"upft: $dad[v] := u$.
+
+Der Aufwand des Minimum Spanning Tree--Algorithmus ist abh"angig von der Sortiermethode und
+entspricht bei den hier implementierten bin"aren Heaps $O(E \log_2 E)$.
+
+\subsection{Kriterien f"ur das Zusammenfassen}
+
+Im folgenden werden nur noch Textblockhypothesen betrachtet, die im minimalen Spannbaum
+mit einer Kante verbunden sind. Es sollen zun"achst folgende Eigenschaften zwischen diesen Blockpaaren untersucht werden:
+\begin{description}
+  \item[E1:]Bl"ocke sind (wie in Kapitel \ref{Konsistenzpruefung} definiert) zueinander homogen.
+  \item[E2:]Die Summe des horizontalen und vertikalen Abstands (s.\ \BildRef{Abstaende})
+  der Bl"ocke ist kleiner als $2\bar{h}$, d.h. $\Delta x + \Delta y < 2 \bar{h}$.
+  \item[E3:]Bl"ocke liegen untereinander (s.\ \BildRef{UnterNeben}), wenn gilt
+  ($X_{min}$, $Y_{min}$ entspricht der oberen linke Ecke der Bounding--Box, $X_{max}$, $Y_{max}$
+  der unteren rechten Ecke und $\bar{h} = \max(\bar{h}_1,\bar{h}_2)$
+  dem Maxima der mittleren Zeichenh"ohen der Bl"ocke)
+  $$X_{min1} - \bar{h} < X_{min2}\quad\wedge\quad X_{max1} + \bar{h} > X_{max2}$$
+  oder
+  $$X_{min2} - \bar{h} < X_{min1}\quad\wedge\quad X_{max2} + \bar{h} > X_{max1}$$
+
+  \item[E4:]Bl"ocke liegen nebeneinander (s.\ \BildRef{UnterNeben}), wenn gilt
+  $$Y_{min1} - \bar{h} < Y_{min2}\quad\wedge\quad Y_{max1} + \bar{h} > Y_{max2}$$
+  oder
+  $$Y_{min2} - \frac{\bar{h}}{2} < Y_{min1}\quad\wedge\quad Y_{max2} + \frac{\bar{h}}{2} > Y_{max1}$$
+
+  \item[E5:]Beide Bl"ocke enthalten nur nichtproportionale Schrift. Die Klassifikation proportional
+  bzw.\ nichtproportional erfolgt mit einem bestehenden Modul. Sie war nicht Gegenstand dieser Arbeit.
+  \item[E6:]Ein Block enth"alt nur eine Textzeile, d.h.
+  $$\frac{Y_{max1} - Y_{min1}}{\bar{h}_1} \; < \;3 \qquad\mbox{oder}\qquad
+    \frac{Y_{max2} - Y_{min2}}{\bar{h}_2} \; < \;3$$
+\end{description}
+
+\Bild{UnterNeben}{10}{Definition f"ur das Untereinander-- und Nebeneinanderliegen von Bl"ocken}
+
+Die zwei Bl"ocke werden verbunden, wenn gilt:
+$$E1 \; \wedge \; E2 \; \wedge \; ( \; E3 \; \vee \; E4 \; \wedge \; ( \; E5 \; \vee \; E6 \; )\;)$$
+
+Grunds"atzliche Bedingung ist die Homogenit"at zwischen den Textbl"ocken (E1) und ein nicht zu gro"ser
+Abstand (E2). Wenn die Bl"ocke au"serdem untereinander liegen (E3), werden sie verbunden.
+Bei der Verbindung von nebeneinanderliegenden Bl"ocken mu"s darauf geachtet werden, da"s nicht "uber Spalten hinweg verbunden wird.
+Hierbei wurde folgende Beobachtung gemacht: Innerhalb der Trainingsdokumente gab es keinen
+Fall, bei dem neben nichtproportionaler Schrift (h"aufig in Gesch"aftsbriefen) mehrere
+Spalten vorkamen.  Daher ist es nicht kritisch, Bl"ocke, die eine nichtproportionale Schrift
+enthalten (E5) und nebeneinander liegen (E4), zu verbinden.
+Enth"alt eine Blockhypothese nur eine Textzeile (E6), so wird es sich wahrscheinlich nicht
+um eine angrenzende Spalte, sondern um eine getrennte Zeile handeln. In diesem Fall werden
+trotz Proportionalschrift (d.h.\ E5 gilt nicht) nebeneinanderliegende Bl"ocke (E4) verbunden.
+
+\subsection{Relaxationsmethode}
+
+Nachdem der minimale Spannbaum aufgebaut wurde, erh"alt man $n-1$
+in r"aumlicher N"ahe stehende Blockpaare. Diese Bl"ocke werden auf die im vorherigen Abschnitt
+beschriebenen Kriterien hin untersucht und gegebenenfalls miteinander verbunden.
+
+Um sicherzustellen, da"s auch zusammengefa"ste Textbl"ocke wiederum verbunden werden k"onnen,
+wird das Vorgehen solange iterativ angewandt, bis ein station"arer Zustand vorherrscht
+(s.\ \BildRef{Relaxation}). Dieses Vorgehen entspricht einer Relaxation:
+
+\begin{enumerate}
+  \item Aufbau des minimalen Spannbaumes.
+  \item Auswertung der Kanten des Graphen. Es werden $n-1$ Vergleiche durchgef"uhrt und ggf.\
+        Textblockpaare verbunden.
+  \item Wurde mindestens ein Blockpaar zusammengefa"st, so wird zum ersten Schritt mit dem neuen
+        Satz von Textbl"ocken zur"uckgesprungen.
+\end{enumerate}
+
+\Bild{Relaxation}{5}{Iteratives Vorgehen beim Zusammenfassen von Textbl"ocken}
+
+{\bf Parametrierung}
+
+\Bild{ParameterPanelMerge}{15}{Parameter f"ur das Zusammenfassen von Textbl"ocken}
+
+\clearpage
+\input{ErgebnisseZoning}

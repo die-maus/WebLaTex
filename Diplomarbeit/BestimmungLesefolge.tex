@@ -1,0 +1,188 @@
+\chapter{Bestimmung der logischen Lesefolge}\label{Lesefolge}
+
+Die Verfahren aus Kapitel \ref{BestimmungZones} liefern Hypothesen f"ur Textbl"ocke.
+Damit der Text aus dem Dokument originalgetreu rekonstruiert werden kann, mu"s die der Segmentierung
+folgende OCR--Analyse die Textbl"ocke in der richtigen Reihenfolge auswerten.
+
+Diese Abfolge der Textbl"ocke mu"s somit der {\em logischen Lesefolge\/} innerhalb des
+Dokuments entsprechen.
+Somit besitzt jeder hypothetisierte Textblock seine -- wiederum hypothetische~-- Position
+innerhalb der Menge der Textbl"ocke.
+
+Die Sortierung erfolgt nach folgendem Schema \cite{Saitoh93}:
+\begin{enumerate}
+  \item Geometrische Beziehungen zwischen Textbl"ocken werden als hierarchische Beziehungen
+  interpretiert und in eine Baumstruktur "ubertragen.
+  \item Die Bl"ocke k"onnen nun einfach innerhalb des Baumes sortiert werden.
+  \item Die Pre--Order Traversion\footnote{Zuerst wird die Wurzel des Baumes besucht, 
+  anschlie"send die Teilb"aume} des Baumes ergibt die hypothetische Lesefolge.
+\end{enumerate}
+
+\section{Transformation der geometrischen Struktur}
+
+Untersuchungen haben ergeben, da"s eine Vielzahl von Dokumenten hierarchisch aufgebaut ist:
+Ein inhaltlich zusammenh"angender Artikel besteht meist aus einem \mbox{("Uberschrift--)} Textblock, der
+darunterliegende, weniger breite Textbl"ocke "uberspannt, 
+die wiederum "uber anderen stehen k"onnen usw.
+
+Bei der Sortierung ist zu beachten, da"s sich die normale Lesefolge (von links nach rechts und
+von oben nach unten) innerhalb hierarchisch angeordneter Textbl"ocke "andert 
+(s.\ \BildRef{Einfluss}). Jeder Textblock "ubt somit einen {\em Einflu"s\/} auf die darunterliegenden
+Textbl"ocke aus. Das Gebiet, in dem ein Textblock andere beeinflu"st, wird im folgenden
+{\em Einflu"sbereich\/} genannt.
+
+\Bild{Einfluss}{10}{Ber"ucksichtigung von hierarchischen Stukturen bei der Lesefolge}
+
+Unter Beachtung der geometrischen Anordnung werden die Textbl"ocke in eine hierarchische
+Baumstruktur "ubertragen. Ausgehend von einem alles "uberschreibenden (beeinflussenden)
+virtuellen Textblock, werden Vater--Sohn-- und Bruder--Beziehungen definiert:
+
+\begin{itemize}
+  \item Befindet sich ein Textblock unter einem anderen, d.h. innerhalb dessen Einflu"sbereich,
+  wird zwischen ihnen eine Vater--Sohn--Beziehung festgelegt. Der Einflu"sbereich wird von dem
+  Vater--Textblock zu dem Sohn--Textblock vererbt (s.\ TB1 und TB2 in \BildRef{Einflussbereich}).
+  
+  Liegen direkt unter einem Textblock mehrere andere, so wird der Einflu"sbereich unter ihnen
+  aufgeteilt (s.\ TB3 und TB4 in \BildRef{Einflussbereich}).
+ 
+  \Bild{Einflussbereich}{4.5}{Vererbung und Aufteilung der Einflu"sbereiche}
+
+  \item Liegen Textbl"ocke nebeneinander, d.h. es gilt
+  $$Y_{1max} > Y_{2min} \quad \wedge \quad Y_{1min} < Y_{2max}
+  \quad\wedge\quad 
+  \left( X_{1max} < X_{2min} \quad \vee \quad X_{2max} < X_{1min} \right),$$
+  
+  wobei $X_{min}$ und $X_{max}$ der linken
+  bzw.\ rechten, $Y_{min}$ und $Y_{max}$ der oberen bzw.\ unteren Kante eines Textblocks
+  entspricht, definiert man in diesem Fall eine Bruder--Beziehung.
+\end{itemize}
+
+Diese Beziehungen lassen sich in eine Baumstruktur "ubertragen, wobei jedem Knoten ein Textblock
+zugeordnet ist (s.\ \BildRef{BeziehungenInBaum}). 
+Damit sich bei einer Pre--Order Traversion des Baumes die Lesefolge ergibt,
+m"ussen die Textbl"ocke, zwischen denen eine Bruder--Beziehung besteht, 
+d.h.\ die denselben Vaters besitzen, im Baum von links nach rechts, entsprechend ihrer
+geometrischen Position, angeordnet werden.
+
+\Bild{BeziehungenInBaum}{8}{"Ubertragen der geometrischen Beziehungen (links) in eine hierarchische Baumstruktur (rechts)}
+
+Die bisherigen Definitionen und Regeln reichen bei komplexeren Dokumenten nicht aus und
+m"ussen deshalb um folgenden Sonderfall erweitert werden:
+Textbl"ocke, die sich nicht oder nur teilweise
+in einem Einflu"sgebiet eines anderen befinden (TB 7 aus \BildRef{LesefolgeStrukturiert}), 
+wurden bisher noch nicht ber"ucksichtigt.
+Sie stellen eigenst"andige (unabh"angige) Bl"ocke dar und werden deshalb auf dieselbe
+hierarchische Ebene wie die des virtuellen Textblocks gestellt, d.h.\ zwischen ihnen und dem
+virtuellen Textblock wird eine Bruder Beziehung definiert. Da diese Textbl"ocke nicht
+gezwungenerma"sen wie sonstige Br"uder--Textbl"ocke, nebeneinander liegen, m"ussen die Knoten nicht 
+von rechts nach links sortiert werden. F"ur diese S"ohne der Wurzel m"ussen
+weitere Sortierregeln aufgestellt werden.
+
+\Bild{LesefolgeStrukturiert}{10}{Spezialfall: Textbl"ocke die nicht oder nur teilweise in einem Einflu"sgebiet liegen (TB 7) stellen unabh"angige Bl"ocke dar}
+
+Die S"ohne der Wurzel werden nach folgendem
+Schema sortiert. Zwei Knoten werden getauscht, wenn mindestens eine der Bedingungen
+erf"ullt ist:
+\begin{enumerate}
+  \item Textblock des linken Knotens liegt im Einflu"sbereich des rechten Knotens (s.\ \BildRef{ErweiterteSorierung} links)
+  \item $Y_{links} \; > \; Y_{rechts}$ und $X_{links} \; > \; X_{rechts}$ (s.\ \BildRef{ErweiterteSorierung} Mitte)
+  \item Textblock des rechten Knotens liegt nicht unter dem Einflu"sbereich des linken Knotens
+  und $X_{links} \; > \; X_{rechts}$ (s.\ \BildRef{ErweiterteSorierung} rechts),
+\end{enumerate}
+wobei der Punkt $(X,Y)$ die linke obere Ecke des zum Knoten geh"orenden Textblocks darstellt.
+
+\Bild{ErweiterteSorierung}{13}{Erweiterte Sortierregeln f"ur die S"ohne der Wurzel}
+
+\subsection*{Layoutbegrenzer}
+
+Liniensegmente (s.\ \KapRef{Filterung}) und wei"ser horizontaler Zwischenraum 
+(bestimmt durch einen horizontalen XY--Cut) dienen in einem Dokument als
+Layoutbegrenzer und werden deshalb bei der Sortierung ber"ucksichtigt
+(\BildRef{LayoutBegrenzer}). Liegt zwischen zwei Textbl"ocken ein solcher
+Layoutbegrenzer, wird zwischen dem Textblockpaar keine Beziehung definiert.
+
+\Bild{LayoutBegrenzer}{10}{Die urspr"ungliche Sortierreihenfolge (links) wird aufgebrochen, wenn Layoutbegrenzer zwischen Textbl"ocken liegen (rechts)}
+
+\subsection*{Textrahmen}
+
+Ein oft benutztes Gestaltungsmittel, um inhaltlich zusammenh"angende Textbereiche
+zu kennzeichnen, ist die Verwendung von Textrahmen. Da Textbl"ocke innerhalb
+dieser Rahmen dieselbe Komplexit"at aufweisen k"onnen, wie diejenigen innerhalb 
+des normalen Dokuments, werden sie separat, d.h.\ wie ein eigenst"andiges Dokument, betrachtet.
+Hierzu ist die
+Baumstruktur geeignet zu erweitern: Jeder Textrahmen bekommt seine eigene Wurzel
+zugewiesen, so da"s zuerst alle Textbl"ocke innerhalb der Textrahmen betrachtet werden,
+und anschlie"send die verbleibenden.
+
+\section{Bestimmung der Lesefolge aus den hierarchischen Beziehungen}
+
+Die logische Lesefolge l"a"st sich durch eine Pre--Order Traversion der Baumes herauslesen.
+Die Wurzeln und die virtuellen Textbl"ocke werden dabei nicht weiter beachtet
+(s.\ \BildRef{Lesefolge}).
+
+\Bild{Lesefolge}{12}{Ergebnis der logischen Textblocksortierung}
+
+\section{Ergebnisse der Sortierung -- Ausblick}
+Das dargestellte Verfahren beschreibt, wie aus der geometrischen Anordung von Textbl"ocken
+deren hypothetische Lesefolge gewonnen werden kann.
+Es zeigt sehr gute Ergebnisse bei klar stukturierten Dokumenten
+(s.\ \BildRef{LesefolgeBeispiele} und \ref{eps:LesefolgeBeispiele2}
+Seite \pageref{eps:LesefolgeBeispiele2} und \pageref{eps:LesefolgeBeispiele}).
+Da als Eingangsdaten jedoch ausschlie"slich die umschreibenden Rechtecke der Textbl"ocke benutzt werden, sind Fehler durch Mehrdeutigkeiten unvermeidbar.
+Die Verfahren zur Sortierung stellten nicht den Schwerpunkt dieser Arbeit dar. Aus diesem Grund,
+wurde nur die grunds"atzliche Eignung der Verfahren "uberpr"uft,
+jedoch die Erkennungsrate nicht qualitativ gemessen. 
+Dazu w"are analog zu der Berechnung der Zoning--Erkennungsraten 
+(s.\ \KapRef{ErgebnisZoning}) wiederum eine aufwendige Erstellung von Referenzdaten samt
+Auswertung n"otig gewesen, die den zeilichen Rahmen dieser Arbeit gesprengt h"atte.
+
+Nur aufgrund der geometrischen Verh"altnisse auf die Lesefolge zu schlie"sen, stellt sich,
+selbst f"ur einen menschlichen Betrachter, als schwieriges Problem dar. Der Leser kann sich
+dies verdeutlichen, wenn der die linke Bildh"alfte von Abbildung \ref{eps:LesefolgeProblem} 
+betrachtet und dabei die rechte verdeckt. 
+Der Mensch kann aufgrund des inhaltlichen Zusammenhangs auf den
+logisch n"achsten Block schlie"sen -- er "uberfliegt die ersten Zeilen der in Frage kommenden
+und w"ahlt intuitiv den richtigen aus. Je ausgefallener und komplexer das Layout, desto
+schwieriger die Aufgabe. 
+So wird deutlich, da"s die Dokumentmenge auf klar strukturierte Dokumente
+(Gesch"aftsbriefe, wissenschaftlichen Artikel, Zeitschriften) beschr"ankt werden mu"ste.
+Bei Steuerbescheiden tritt die Frage auf, welche Abfolge innerhalb einer Tabelle "uberhaupt 
+die richtige ist.
+
+\Bild{LesefolgeProblem}{12}{Die umschreibenden Blockrechtecke als Ausgangsdaten (links) f"ur das Sortierverfahren -- selbst f"ur den menschlichen Betrachter ist die Bestimmung der Lesefolge ohne Zuhilfenahme des Originals nicht einfach}
+
+Folgende Probleme sind aufgetreten:
+\begin{itemize}
+  \item Aufgrund der umschreibenden Rechtecke kann nicht immer eindeutig auf eine Lesefolge
+  geschlossen werden (s.\ \BildRef{LSZweideutigkeiten}). Die Sortierung erfolgt nach der
+  ersten M"oglichkeit, obwohl bei inhaltlicher Betrachtung die zweite
+  vielleicht die richtige w"are (\BildRef{LSFehler} links).
+  
+  \Bild{LSZweideutigkeiten}{8}{Lesefolge l"a"st sich aufgrund der Eingangsdaten (links) nicht eindeutig bestimmen}
+  
+  Um diese Fehler zu vermeiden, m"u"sten Regeln eingef"uhrt werden, die zus"atzlich
+  zu der geometrischen Anordnung der Textbl"ocke, deren Inhalt ber"ucksichtigen 
+  (z.B.\ Buchstabengr"o"se). Eine fehlerfreies Ergebnis wird man nur erhalten, wenn der Text
+  gelesen und verstanden wurde.
+
+  \item Textbl"ocke unter oder "uber Tabellen und Grafiken 
+  werden direkt in den Textflu"s einbezogen (\BildRef{LSFehler} rechts). Um dies zu verhindern,
+  m"u"sten Textbl"ocke unter bzw.\ "uber Nicht--Textgebieten als Bildunter-- 
+  bzw.\ Bild"uberschriften
+  klassifiziert und bei der Sortierung separat betrachtet werden. Hierzu m"u"sten zuvor
+  Text-- und Nicht--Textgebiete erkannt und getrennt werden.
+\end{itemize}
+
+\Bild{LSFehler}{9.5}{Fehler bei der Bestimmung der Lesefolge: Mehrdeutigkeiten (links) und Einbeziehung von Bildunterschriften in den Textflu"s (rechts)}
+
+Eine entscheidende Voraussetzung f"ur die Richtigkeit der Sortierung ist ein gutes Ergebnis aus der
+Textblocksegmentierung. Traten hier schon Fehler auf, werden sich diese
+bei der Sortierung weiter fortsetzen. Somit gelten die bei der Segentierung genannten
+Verbesserungsans"atze auch bei der Sortierung.
+
+Grunds"atzlich w"are jede neue auf Sonderf"alle angepa"ste, Sortierungsregel nur eine unter
+vielen anderen denkbaren. 
+
+\Bild{LesefolgeBeispiele2}{11}{Beispiele f"ur die Sortierung (1)}
+\Bild{LesefolgeBeispiele}{13}{Beispiele f"ur die Sortierung (2)}
+

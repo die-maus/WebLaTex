@@ -1,0 +1,167 @@
+\chapter{Experimentierumgebung}\label{Experimentierumgebung}
+
+\section{Testumgebung}
+\subsection*{Hardware und Betriebssystem}
+Die Experimentierumgebung wurde auf einer NeXT--Workstation unter dem Betriebssystem
+NEXTSTEP entwickelt und implementiert. Die NeXT--Workstations basieren auf
+einem Motorola MC68040 Prozessor, der entweder mit 25MHz oder in der Turbo-Version mit
+33MHz getaktet wird. Die Spitzenleistung nach dem LINPACK--Test betr"agt bei der 25MHz
+Version 15 MIPS und 2 MFLOPS. Da sich NeXT seit 1992 aus dem Hardwaregesch"aft zur"uckgezogen
+hat werden diese Maschinen zunehmend durch leistungsf"ahigere Workstations 
+anderer Hersteller ersetzt. Die Firma NeXT widmet sich nun ausschlie"slich der Weiterentwicklung
+ihres Betriebssystems NEXTSTEP samt Entwicklungsumgebung und Portierungen auf 
+andere Prozessoren (Intel 80x86, SPARC, HP-PA RISC).
+
+Das besondere Merkmal von NEXTSTEP ist die grafische Benutzeroberfl"ache. Sie macht alle
+wichtigen Dienste und Applikationen durch Anw"ahlen von Symbolen und Men"us zug"anglich. Ein
+weiterer gro"ser Vorteil liegt in der schnellen Grafikausgabe durch Display--PostScript, die
+dieses System zum idealen Werkzeug f"ur Bild\-ver\-arbeit\-ungs\-auf\-gaben macht.
+
+\subsection*{NeXT--Entwicklungsumgebung}
+Kernpunkte der NeXT--Entwicklungsumgebung sind zum einen der Compiler f"ur die Programmiersprache
+{\em Objective--C\/} und zum anderen die beiden Werkzeuge {\em Project--Builder\/} und 
+{\em Interface--Builder\/}.
+
+Objective--C ist eine von Brad J.\ Cox vorgeschlagende Erweiterung der Programmiersprache ANSI--C,
+die diese zu einer vollst"andigen objektorientierten Sprache macht. Cox stellte sich die Frage was
+an einer `herk"ommlichen' Programmiersprache erweitert oder ver"andert werden mu"s, um daraus eine 
+objektorientierte zu machen. Er kam zu folgendem Ergebnis: Ben"otigt wird
+\begin{itemize}
+  \item ein Datentyp f"ur Objekte,
+  \item eine Syntax zur Beschreibung von Klassen,
+  \item eine syntaktische Struktur zum Versenden von Nachrichten,
+  \item eine entsprechende Laufzeitunterst"utzung.
+\end{itemize}
+Die Idee des objektorientierten Programmierens besteht darin, ein Programm aus einer Menge von 
+{\em Objekten\/} aufzubauen. F"ur die unterschiedlichsten Zwecke gibt es bestimmte Typen 
+von Objekten, auch {\em Klassen\/} genannt. 
+Die Klassendefinition bestimmt die Eigenschaften aller zugeh"origen Objekte.
+Ein Objekt besteht aus Attributen und Operationen. Erstere sind die Daten, auch 
+{\em Instanzvariablen\/} genannt. Der Zugriff auf die Instanzvariablen eines Objekts erfolgt 
+ausschlie"slich "uber den Aufruf einer seiner Operationen ({\em Methoden\/}).
+Ein solcher Aufruf erfolgt durch das Versenden einer {\em Nachricht\/} an das Objekt, mit der
+Aufforderung, die Methode gleichen Namens auszuf"uhren. Objekte kommunizieren nur
+durch Nachrichtenaustausch miteinander, um gemeinsam die Problemstellung des Programms zu l"osen.
+F"ur eine ausf"uhrliche Beschreibung sei auf \cite{ct94} verwiesen. 
+
+Das Herzst"uck der Softwareentwicklung unter NEXTSTEP ist der Project--Builder. Er ist f"ur die
+Verwaltung alle Komponenten einer Applikation (haupts"achlich Quelltexte) in einem Projekt zust"andig
+und erlaubt den schnellen Zugriff auf weitere Entwicklungswerkzeuge, wie etwa zur Fehlersuche 
+(Debugger) und zur Quelltext"ubersetzung (Compiler).
+
+Die NeXT--Rechner typische Benutzeroberfl"ache l"a"st sich komfortabel mit dem Interface--Builder erstellen.
+
+\subsection*{APRES--Softwareumgebung}
+
+APRES steht f"ur {\sl A\/}dvanced {\sl P\/}attern {\sl R\/}ecognition {\sl E\/}ngineering
+{\sl S\/}oftware und hat zum Ziel, eine ad"aquate Entwicklungs-- und Experimentierumgebung
+im Bereich Mustererkennung zu bieten.
+
+F"ur die allermeisten Programmsysteme gilt, da"s die Implementierung der eigentlichen Algorithmen
+nur einen kleinen Bruchteil das Gesamtsystems darstellt. Der Rest ist f"ur Datenhaltungsaspekte,
+Interaktionsaufgaben und f"ur die Koordinierung des Ablaufs zu\-st"an\-dig.
+Ein wesentlicher Punkt einer Entwicklungsumgebung ist die Datenhaltung. Die
+Trennung zwischen Datenhaltung und Algorithmenimplementierung ist zu bevorzugen, da sich dann
+die Wartbarkeit der Programme erh"oht und sich die Algorithmen leichter nachvollziehen lassen.
+
+An die Datenhaltung werden folgende Anforderungen gestellt:
+\begin{itemize}
+  \item Ablegen der Daten nach Beendigung des Programmes, bzw.\ Bereitstellung der Daten f"ur
+  andere Programme
+  \item Modellierung von semantischen Zusammenh"angen (Beziehungen) zwischen Datenstrukturen 
+  (Einf"uhrung einer Strukturierung)
+  \item M"oglichkeit zur "Uberpr"ufung der Richtigkeit der Daten
+  \item Versionierung der Datens"atze
+\end{itemize}
+
+Um diese Forderungen zu erf"ullen, bietet APRES eine objektorientierte Datenverwaltung. Jedem Objekt
+ist zun"achst ein Identifikator (ID--Nummer) zugeordnet. Eine Benennung kann wahlweise 
+auch durch einen aussagekr"aftigen Aliasnamen (entspricht einer symbolischen Zeichenkette) erfolgen.
+Der Identifikator eines Objektes ist f"ur die
+gesamte Datenhaltung eindeutig. Nat"urlich lassen sich jedem Objekt passende
+Nutzdaten zuordnen. Diese Nutzdaten beschreiben in Form verschiedener Datenstrukturen bestimmte
+Aspekte oder Attribute von Objekten. Beispiele dieser Datenstrukturen (Tuple genannt) sind
+"`BOX"' zum Ablegen eines Rechtecks, "`INTEGER"' f"ur einen Interger--Wert
+und "`BIN\_IMAGE\_TUPLE"' f"ur die Aufnahme eines
+Bin"arbildes. Zu jeder Datenstruktur gibt es einen Statz von standardisierten Zugriffsfunktionen,
+welche eine einfache und schnelle Handhabung der Nutzdaten zulassen.
+
+Beziehungen zwischen zwei Objekten lassen sich "uber eine Relation ({\em Link\/} genannt)
+mit einem bestimmten {\em Linktype\/} aufbauen. Diese Typen sind "uber ihre Aliasnamen definiert.
+Beispiele hierf"ur sind "`is\_a"' und "`is\_part"'. Mit dem "`is\_a"'--Type wird einem Objekt eine
+Bedeutung zugeordnet.
+So hat z.B.\ ein Objekt, das eine Textseite repr"asentiert, einen "`is\_a"'--Link zu einem
+Klassenobjekt mit dem Aliasnamen "`PAGE"'. Die "`is\_a"'--Beziehung kann mehrfach vergeben, 
+und somit k"onnen einem Objekt mehrer Bedeutungen zugeordnet werden. Der "`is\_part"'--Type kennzeichnet 
+eine hierarchische Struktur, wie z.B.\ eine Teilebeziehung zwischen Seite und Gesamtdokument 
+(s.\ \BildRef{APRESLinks}).
+
+\Bild{APRESLinks}{11}{Beispiel einer Datenmodellierung in APRES}
+
+Abbildung \ref{eps:APRESvorZoning} zeigt den Datenbankzustand nach der BCC--Analyse. Der
+Zustand der Datenbank nach der Bestimmung der Textbl"ocke und der Lesefolge ist in 
+Abbildung \ref{eps:APRESnachZoning} ersichtlich.
+
+Hinter dem APRES--Kontextkonzept verbirgt sich ein Schichtenmodell der Datenbank, welches es
+erm"oglicht bestimmte Zust"ande (Versionen oder Instanzen) der Datenbank zu 
+konservieren und sp"ater wieder herzustellen. 
+Jeder gesicherte Datenbankzustand entspricht einem Kontext. 
+Zu Beginn eines Experiments befindet man sich in dem Wurzel--Kontext. 
+Anschlie"send besorgt man sich Einsicht 
+zu den notwendigen Informationen, indem man eine Verbindung zu denjenigen Kontexten schafft, die diese 
+Informationen enthalten. Man hat nur Zugriff zu den Daten des Kontextes, zu dem man eine
+Verbindung geschaffen hat. Dazu geh"oren die Daten, die in diesem Kontext erzeugt wurden, aber
+auch alle Daten der Vaterkontexte (Vererbungsprinzip).
+
+In der Dokumentanalyse korrespondiert ein Kontext meist mit dem Abschlu"s eines gr"o"seren 
+Verarbeitungsschrittes (BCC--Analyse, Zoning, Klassifikation, etc.).
+
+\Bild{APRESvorZoning}{11}{Datenbankzustand nach der BCC--Analyse}
+
+\Bild{APRESnachZoning}{15}{Datenbankzustand nach der Bestimmung der Textbl"ocke und der Lesefolge}
+
+\clearpage
+\section{Generisches CALtool}
+Um die Ergebnisse aus dem Verfahren zur Bestimmung von Textbl"ocken beurteilen zu k"onnen, 
+m"ussen die berechneten -- hypothetischen -- Paragraphen mit einer Referenz verglichen werden.
+Das bedeutet, da"s das Datenmaterial von menschlicher Seite gesichtet und
+vorklassifiziert ({\em gelabelt\/}) wurde. In unserem Fall mu"s der Bearbeiter die Dokumente
+in (rechteckige) Bereiche einteilen. Hierbei kann er zwischen zwei Namen ({\em Labels\/})
+ausw"ahlen: Textbereiche und Nicht--Textbereiche. Um diesen Aufwand so gering wie m"oglich zu
+halten, empfiehlt es sich, den Proze"s computerunterst"utzt ablaufen zu lassen. Ein
+Programm zur Unterst"utzung beim Labeln, das CALtool ({\em C\/}omputer 
+{\em A\/}ided {\em L\/}abeling), bietet sich an.
+Dieses CALtool bietet generische Rahmenmodule, die f"ur eine Vielzahl von
+Anwendungsbereiche gleicherma"sen einsetzbar sind. Dadurch m"ussen immer wiederkehrende
+Aufgaben  nicht jedesmal neu implementiert werden. F"ur eine ausf"uhrliche
+Spezifikation sei auf \cite{CALtool} verwiesen.
+
+Mit Hilfe diese Rahmens war es in kurzer Zeit m"oglich, eine eigene
+auf die Klassifikation von Text-- und
+Nicht--Textgebieten spezialisierte CALtool--Anwendung zu erzeugen. Die Anforderungen an das
+Zoning--CALtool waren folgende:
+\begin{itemize}
+  \item Laden von einem oder mehreren Dokumenten aus der Datenbank oder aus entsprechenden 
+  Datenfiles.
+  \item Grafisch unterst"utzte Markierung von Bereichen innerhalb eines Dokuments.
+  \item Benennung der Bereiche als `Text' oder `Nicht--Text'.
+  \item Laden der hypothetischen Textbl"ocke als Labelhilfe.
+  \item Ablegen der gelabelten Bereiche in Textdateien zur weiteren Auswertung.
+\end{itemize}
+
+%Abbildung \ref{eps:CALtool} zeigt die Oberfl"ache der CAltool Anwendung. 
+
+\Bild{CALtool}{16}{Die grafische Oberfl"ache der CALtool Anwendung}
+\clearpage
+\section{Die Applikation ZoningLab}
+Die Applikation {\em ZoningLab\/} dient zum Testen der Methoden zur Layoutanalyse. Sie stellt
+eine komfortable Benutzeroberfl"ache zur Verf"ugung, inklusive APRES--Datenbankzugriff, 
+Parametrierung und Starten der Verfahren sowie Visualisierung der Ergebnisse. S"amtliche in
+Kapitel \ref{BestimmungZones} und \ref{Lesefolge} beschriebenen Verfahren wurden in das
+{\em ZoningLab\/} integriert.
+
+\Bild{ZoningLab}{16}{Die grafische Oberfl"ache des ZoningLabs}
+\clearpage
+\section{Parameterpanel}\label{ParameterPanel}
+
+\BildHier{ParameterPanel}{9}{Parametereingabe f"ur das Zoning}
